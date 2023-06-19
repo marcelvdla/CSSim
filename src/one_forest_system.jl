@@ -12,7 +12,7 @@ function one_forest_system(u0; p, f, h)
 end 
 
 """
-    antonovsky_rule(u, p, t)
+    antonovsky_rule(u, params, t)
 
 Return the density of young trees (`x`) and old trees (`y`) for a one-species,
 two sub-population forest ecosystem. 
@@ -21,9 +21,9 @@ two sub-population forest ecosystem.
 
 [2] : [Antonosky1990](https://www.sciencedirect.com/science/article/abs/pii/004058099090043U?via%3Dihub)
 """
-function antonovsky_rule(u, p, t)
+function antonovsky_rule(u, params, t)
     x, y = u
-    p, f, h = p
+    p, f, h = params
     xdot = ρ*y - γ(y)*x - f*x
     ydot = f*x - h*y
     return SVector(xdot, ydot)    
