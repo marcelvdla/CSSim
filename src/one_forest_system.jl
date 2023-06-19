@@ -38,4 +38,4 @@ TODO: Define default params
 
 [1] : Equation (2) from [Cantin2020](https://www.sciencedirect.com/science/article/pii/S1476945X20300386)
 """
-gamma(y, a, b, c) = a*(y - b)^2 - c
+gamma(y, a, b, c) = a*(y - b)^2 + c
