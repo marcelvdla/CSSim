@@ -23,14 +23,14 @@ two sub-population forest ecosystem.
 """
 function antonovsky_rule(u, params, t)
     x, y = u
-    p, f, h = params
-    xdot = ρ*y - γ(y)*x - f*x
+    ρ, f, h = params
+    xdot = ρ*y - gamma(y)*x - f*x
     ydot = f*x - h*y
     return SVector(xdot, ydot)    
 end 
 
 """
-    γ(y, a, b, c)
+    gamma(y, a, b, c)
 
 Return mortality rate of young trees
 
@@ -38,4 +38,4 @@ TODO: Define default params
 
 [1] : Equation (2) from [Cantin2020](https://www.sciencedirect.com/science/article/pii/S1476945X20300386)
 """
-γ(y, a, b, c) = a*(y - b)^2 - c
+gamma(y, a, b, c) = a*(y - b)^2 - c
