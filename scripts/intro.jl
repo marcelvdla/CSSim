@@ -1,8 +1,5 @@
 using DrWatson
-@quickactivate "CSSim"
-
-# Here you may include files from the source directory
-include(srcdir("dummy_src_file.jl"))
+@quickactivate :CSSim
 
 println(
 """
@@ -10,7 +7,7 @@ Currently active project is: $(projectname())
 
 Path of active project: $(projectdir())
 
-Have fun with your new project!
+Have fun with your new project with authors JF, EL, DW, and MVDL!
 
 You can help us improve DrWatson by opening
 issues on GitHub, submitting feature requests,
