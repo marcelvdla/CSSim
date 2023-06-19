@@ -1,5 +1,17 @@
 # CSSim
 
+Reproducing [Networks of forest ecosystems: Mathematical modeling of their biotic pump mechanism and resilience to certain patch deforestation](https://www.sciencedirect.com/science/article/pii/S1476945X20300386) as part of UvA's Complex System Simulation 
+2023 course.
+
+Members:
+
+* Eva Lampret
+* Marcel van de Lagemaat
+* Jared Frazier
+* Dominique Weltevreden
+
+# Julia 
+
 This code base is using the [Julia Language](https://julialang.org/) and
 [DrWatson](https://juliadynamics.github.io/DrWatson.jl/stable/)
 to make a reproducible scientific project named
