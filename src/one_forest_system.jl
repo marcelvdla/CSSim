@@ -6,8 +6,8 @@ using DynamicalSystems
 Coupled ODE system for modeling the dynamics of a single forest ecosystem's
 young and old tree density.
 """
-function one_forest_system(u0; p, f, h)
-    params = [p, f, h]
+function one_forest_system(u0; p, f, h, a, b, c)
+    params = [p, f, h, a, b, c]
     return CoupledODEs(antonovsky_rule, u0, params)
 end 
 
@@ -23,19 +23,8 @@ two sub-population forest ecosystem.
 """
 function antonovsky_rule(u, params, t)
     x, y = u
-    ρ, f, h = params
-    xdot = ρ*y - gamma(y)*x - f*x
+    ρ, f, h, a, b, c = params
+    xdot = ρ*y - gamma(y, a, b, c)*x - f*x
     ydot = f*x - h*y
     return SVector(xdot, ydot)    
 end 
-
-"""
-    gamma(y, a, b, c)
-
-Return mortality rate of young trees
-
-TODO: Define default params
-
-[1] : Equation (2) from [Cantin2020](https://www.sciencedirect.com/science/article/pii/S1476945X20300386)
-"""
-gamma(y, a, b, c) = a*(y - b)^2 + c
