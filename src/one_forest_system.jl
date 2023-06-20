@@ -1,5 +1,5 @@
 using DynamicalSystems
-using CSSim
+include("common.jl")
 
 """
     one_forest_system(u0; ρ, f, h, a = 1, b = 1, c = 1)
