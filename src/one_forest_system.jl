@@ -27,5 +27,5 @@ function antonovsky_rule(u, params, t)
     ρ, f, h, a, b, c = params
     xdot = ρ*y - gamma(y, a, b, c)*x - f*x
     ydot = f*x - h*y
-    return SVector(xdot, ydot)    
+    return SVector(xdot, ydot)
 end 
