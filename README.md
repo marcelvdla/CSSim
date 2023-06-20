@@ -93,3 +93,9 @@ which auto-activate the project and enable local path handling from DrWatson.
 The above syntax is based on [making your DrWatson project a usable module](https://juliadynamics.github.io/DrWatson.jl/stable/real_world/#Making-your-project-a-usable-module-1),
 which was done for the purposes of using `Revise.jl`. See the [discussion](https://discourse.julialang.org/t/best-debug-workflow-for-dr-watson/97234/5)
 here for more information on this. 
+
+# References
+
+[Cantin2020](https://www.sciencedirect.com/science/article/pii/S1476945X20300386)
+
+[Antonovsky1990](https://www.sciencedirect.com/science/article/abs/pii/004058099090043U?via%3Dihub)
