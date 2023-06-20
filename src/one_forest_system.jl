@@ -1,4 +1,5 @@
 using DynamicalSystems
+using Symbolics
 include("common.jl")
 
 """
@@ -34,11 +35,43 @@ end
     antonovsky_jacob(u, params, t)
 
 Jacobian for the Antonovsky forest ecosystem model.
-
-TODO: Double check jacobian
 """
 function antonovsky_jacob(u, params, t) 
     x, y = u
     ρ, f, h, a, b, c = params
-    return SMatrix{2,2}(-c - f - a*((y - b)^2), ρ - 2a*x*(y - b), f, -h)
+    return SMatrix{2,2}(-c - f - a*((y - b)^2), f, ρ - 2a*x*(y - b), -h)
 end
+
+"""
+    antonovsky_sym_rule()
+
+Return the symbolic representation of the Antonovsky dynamical system
+and the state variables of that system.
+"""
+function antonovsky_sym_rule()
+    # state variables
+    @variables x y
+
+    # time derivatives
+    @variables xdot ydot
+
+    # parameters
+    @variables a b c ρ f h γ
+    
+    # antonovsky dynamical system
+    γ = a*(y-b)^2 + c
+    xdot = ρ*y - γ*x - f*x
+    ydot = f*x - h*y
+
+    return([xdot, ydot], [x, y])
+end 
+
+"""
+    antonovsky_sym_jacob()
+    
+Return the symbolic Jacobian of the Antonovsky model.
+"""
+function antonovsky_sym_jacob() 
+    dx, x = antonovsky_sym_rule()
+    return Symbolics.jacobian(dx, x)
+end 
