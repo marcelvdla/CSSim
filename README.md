@@ -40,9 +40,20 @@ TODO
 
 *On MacOS:*
 
+On macOS, a julia-1.9.1-mac64.dmg file is provided, which contains Julia-1.9.app. Installation is the same as any other Mac software: drag the Julia-1.9.app to Applications Folder's Shortcut. The Julia download runs on macOS 10.9 Mavericks and later releases. You can build from source for macOS 10.6 Snow Leopard (possibly earlier versions as well) and 32-bit but neither are fully supported.
+
+You can launch Julia by opening the Julia app like any other application.
+Optional: Add Julia to PATH
+
+If you want to launch Julia from the command line, first open a new terminal window, then run the following snippet from your shell (e.g., using the Terminal app, not inside the Julia prompt).
+
 ```
-TODO
+sudo mkdir -p /usr/local/bin
+sudo rm -f /usr/local/bin/julia
+sudo ln -s /Applications/Julia-1.9.app/Contents/Resources/julia/bin/julia /usr/local/bin/julia
 ```
+
+This code creates a symlink to a Julia version (here 1.9) of your choosing. To launch Julia, simply type julia inside your shell and press return.
 
 *For developers only:*
 
@@ -82,3 +93,9 @@ which auto-activate the project and enable local path handling from DrWatson.
 The above syntax is based on [making your DrWatson project a usable module](https://juliadynamics.github.io/DrWatson.jl/stable/real_world/#Making-your-project-a-usable-module-1),
 which was done for the purposes of using `Revise.jl`. See the [discussion](https://discourse.julialang.org/t/best-debug-workflow-for-dr-watson/97234/5)
 here for more information on this. 
+
+# References
+
+[Cantin2020](https://www.sciencedirect.com/science/article/pii/S1476945X20300386)
+
+[Antonovsky1990](https://www.sciencedirect.com/science/article/abs/pii/004058099090043U?via%3Dihub)
