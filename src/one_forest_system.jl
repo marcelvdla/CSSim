@@ -29,3 +29,16 @@ function antonovsky_rule(u, params, t)
     ydot = f*x - h*y
     return SVector(xdot, ydot)
 end 
+
+"""
+    antonovsky_jacob(u, params, t)
+
+Jacobian for the Antonovsky forest ecosystem model.
+
+TODO: Double check jacobian
+"""
+function antonovsky_jacob(u, params, t) 
+    x, y = u
+    ρ, f, h, a, b, c = params
+    return SMatrix{2,2}(-c - f - a*((y - b)^2), ρ - 2a*x*(y - b), f, -h)
+end
