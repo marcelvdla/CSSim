@@ -20,10 +20,12 @@ rng = MersenneTwister(42)
 u0s = rand(rng, Uniform(0, 5), (n_initial_points, n_states))
 
 # Iterate through initial states and create phase portrait
-# TODO: finish
-for i in 1:size(arr)[1]
+nrows = size(u0s)[1]
+for i in 1:nrows
     ds = one_forest_system(u0s[i,:], ρ = ρ, f = f, h = h)
-    trajectory_ds = trajectory(ds, T, )
-end 
-
+    trajectory_ds = trajectory(ds, T)
+    young_tree_density_x, old_tree_density_y = trajectory_ds
+    
+    break
+end
 

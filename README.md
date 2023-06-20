@@ -63,6 +63,15 @@ to modify your `~/.julia/config/startup.jl` to include `using Revise`.
 
 ## Usage
 
+If Julia is already installed, change to the directory of this project
+and do the following in a command prompt:
+
+```
+
+```
+
+## DrWatson Setup
+
 This code base is using the [Julia Language](https://julialang.org/) and
 [DrWatson](https://juliadynamics.github.io/DrWatson.jl/stable/)
 to make a reproducible scientific project named
