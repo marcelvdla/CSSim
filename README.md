@@ -37,7 +37,7 @@ from src.penalty import alpha
 # Julia Setup 
 
 ## Installation
-Go to [julialang.org](https://juliailang.org/downloads/). 
+Go to [julialang.org](https://julialang.org/downloads/). 
 
 *On Linux:*
 
