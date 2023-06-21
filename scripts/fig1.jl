@@ -20,7 +20,7 @@ using Distributions
 using Random
 using Plots
 using ChaosTools
-
+@quickactivate :CSSim
 include(joinpath(srcdir(), "one_forest_system.jl"))
 
 # +
