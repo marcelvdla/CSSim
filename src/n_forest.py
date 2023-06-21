@@ -7,7 +7,7 @@ from scipy.integrate import solve_ivp
 def B(xi, yi, beta_1=0, beta_2=1):
         return beta_1 * xi + beta_2 * yi
 
-def w_i(i, x, y, d, P_0=1.05):
+def w_i(i, x, y, d, l=600, P_0=1.05):
     """ i::forest index
         x::array of densities of young trees
         y::array of densities of old trees
@@ -16,15 +16,15 @@ def w_i(i, x, y, d, P_0=1.05):
     if i == 0:
         return P_0  # the first forest receives only the base level of precipitation
     else:
-        w = P_0 * np.exp(-np.sum(d[:i]) / sum(d))
+        w = P_0 * np.exp(-np.sum(d[:i]) / l)
         for j in range(i, i+1):
-            w += B(x[j], y[j]) * np.exp(-np.sum(d[j-1:i]) / sum(d))
+            w += B(x[j], y[j]) * np.exp(-np.sum(d[j-1:i]) / l)
         return w
 
 def alpha(x, y, dist, w_0=1, alpha_0=-1):
     """ Computes the penalty values and returns list of penalty per forest
     """
-    d = len(x) * [dist]       # distance hardcoded to 42km
+    d = len(x) * [dist]
     
     return [alpha_0 * (1 - w_i(i, x, y, d) / w_0) for i in range(len(x))]
 
