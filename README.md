@@ -10,14 +10,34 @@ Members:
 * Jared Frazier
 * Dominique Weltevreden
 
-# Python Setup (if applicable)
+# Python Setup
 
-...
+If you have conda installed, do the following:
+
+```shell
+conda create --name CSSim pip
+conda activate CSSim 
+```
+
+Then do the following regardless of whether you have conda:
+
+```shell
+pip install -r requirements.txt
+pip install -e .
+```
+
+Functionally, what this means is that in the `scripts/` and `notebooks/`
+folder, you can import modules directly from the `src/` folder. For example,
+
+```python
+# In `notebooks/example_import.ipynb`
+from src.penalty import alpha
+```
 
 # Julia Setup 
 
 ## Installation
-Go to [julialang.org](https://juliailang.org/downloads/). 
+Go to [julialang.org](https://julialang.org/downloads/). 
 
 *On Linux:*
 
@@ -67,7 +87,10 @@ If Julia is already installed, change to the directory of this project
 and do the following in a command prompt:
 
 ```
-
+julia> using Pkg
+julia> Pkg.install("DrWatson") # only if not already installed
+julia> Pkg.activate(".")
+julia> Pkg.instantiate()
 ```
 
 ## DrWatson Setup
