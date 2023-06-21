@@ -1,4 +1,4 @@
-from typing import List, Set
+from typing import List, Set, Callable
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -37,7 +37,7 @@ def deriv_forest(x, y, penalty_rate, args):
     y            = value for y; density of old trees in ecosystem, typically between 0 and 4
     penalty_rate = penalty rate calculated by penalty function
     args         = tuple of 6 arguments
-
+    
     Returns derivatives of x and y.
     """
     # Unpack arguments rho, gamma (not used), f, h, a1 and a2
@@ -124,3 +124,18 @@ def epsilon_k(k: int, random_distinct_integers_i: Set[int]):
     """
 
     return k in random_distinct_integers_i 
+
+
+def solve_ivp_step_template(
+    f: Callable, T: int, y0: List, n_state_variables: int):
+    """ TODO"""
+    
+    solutions_at_t = solve_ivp(f, [0, 1], y0).y[:, -1]
+    solutions = [y0, solutions_at_t]
+
+    for t in range(1, T - 1):
+        solutions_at_t = solve_ivp(f, (t, t+1), solutions_at_t)
+        solutions_at_t = solutions_at_t.y[:, -1]
+        solutions.append(solutions_at_t)
+
+    return solutions
