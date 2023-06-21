@@ -124,18 +124,3 @@ def epsilon_k(k: int, random_distinct_integers_i: Set[int]):
     """
 
     return k in random_distinct_integers_i 
-
-
-def solve_ivp_step_template(
-    f: Callable, T: int, y0: List, n_state_variables: int):
-    """ TODO"""
-    
-    solutions_at_t = solve_ivp(f, [0, 1], y0).y[:, -1]
-    solutions = [y0, solutions_at_t]
-
-    for t in range(1, T - 1):
-        solutions_at_t = solve_ivp(f, (t, t+1), solutions_at_t)
-        solutions_at_t = solutions_at_t.y[:, -1]
-        solutions.append(solutions_at_t)
-
-    return solutions
