@@ -1,4 +1,7 @@
 from typing import List, Set, Callable
+from typing import NamedTuple
+
+from collections import namedtuple 
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -124,3 +127,66 @@ def epsilon_k(k: int, random_distinct_integers_i: Set[int]):
     """
 
     return k in random_distinct_integers_i 
+
+
+def randomly_perturb_ecosystems(
+        t_timesteps: int, 
+        n_deforested_ecosystems: int, 
+        n_total_ecosystems: int,
+        seed: int = 42) -> List[NamedTuple]:
+    """Randomly perturb ecosystems at random timesteps
+
+    Example:
+
+    ```python
+    >>> perturbed_ecosystems = randomly_perturb_ecosystems(50, 2, 10)
+    >>> perturbed_ecosystems
+    [EcosystemDeforestTime(ecosystem_id=8, t_star=18),
+     EcosystemDeforestTime(ecosystem_id=1, t_star=22)] 
+    >>> perturbed_ecosystems[0].ecosystem_id
+    8
+    >>> perturbed_ecosystems[0].t_star
+    18
+    ```
+    
+    Args:
+        t_timesteps: Number of timesteps over which integration will occur.
+            For example, one might compute trajectories of a dynamical system
+            over 50 timesteps (e.g., years), so then `t_timesteps = 50`.
+        n_deforested_ecosystems: 
+        n_total_ecosystems: Total number of ecosystems.    
+
+    Returns:
+        A list of named tuples. The named tuple has a `ecosystem_id` and `t_star`
+        property. The `ecosystem_id` is deforested at time `t_star` according to 
+        the `epsilon_k` and `theta` functions defined in this file.
+
+    References:
+        Equation (15) in Cantin2020
+    """
+    np.random.seed(seed)
+    assert n_total_ecosystems >= 2, "there must be 2 or more ecosystems"
+    assert n_deforested_ecosystems >= 0, \
+        "number of ecosystems to perturb must be >= 0"
+    
+    # randomly generate ids for ecosystems that will be deforested 
+    ecosystem_ids_to_deforest = np.random.choice(
+        n_total_ecosystems, size=(n_deforested_ecosystems,), replace=False)
+
+    # randomly generate time steps at which ecosystem ids will be deforested
+    timesteps_to_deforest = np.random.choice(
+        t_timesteps, size=(n_deforested_ecosystems))
+    
+    # combine the ecosystems and timesteps into a list of tuples
+    ecosystem_time_tuples = []
+    EcosystemDeforestTime = namedtuple(
+        "EcosystemDeforestTime", ["ecosystem_id", "t_star"])
+
+    for i in range(len(ecosystem_ids_to_deforest)):
+        ecosystem_time_tuple = EcosystemDeforestTime(
+            ecosystem_ids_to_deforest[i],
+            timesteps_to_deforest[i])
+
+        ecosystem_time_tuples.append(ecosystem_time_tuple)
+
+    return ecosystem_time_tuples
