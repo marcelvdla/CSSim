@@ -7,29 +7,69 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 
-def B(xi, yi, beta_1=0, beta_2=1):
-        return beta_1 * xi + beta_2 * yi
 
-def w_i(i, x, y, d, l=600, P_0=1.05):
-    """ i::forest index
-        x::array of densities of young trees
-        y::array of densities of old trees
-        d::distances between forests
+def B(xi: float, yi: float, beta_1=0, beta_2=1):
+    """Return quantity of water evaporated over `i^th` forest.
+
+    Args:
+        xi: Density of young tree species in `i^th` forest.
+        yi: Density of old tree spcies in `i^th` forest.
+        beta_1: Water evaporation coefficient of young trees (`mm * year**-1`).
+        beta_2: Water evaporation coefficient of old trees (`mm * year**-1``).
+    
+    References:
+        Equation (7) in Cantin2020.
+    """
+    return beta_1 * xi + beta_2 * yi
+
+
+def w_i(i: int, x: List[float], y:List[float], d: List[float], l=600, P_0=1.05):
+    """Water received by ecosystems in network.
+
+    This is the biotic pump mechanism.
+    
+    Args:
+        i: `i^th` forest.
+        x: List of densities of young trees for N ecosystems.
+        y: List of densities of old trees for N ecosystems.
+        d: List of distances where `d_i` is distance between forest `i` and `i+1`.
+        l: Positive normalization coefficient from size of forested area.
+        P_0: Average water quantity evaporated over nearby maritime zone.
+
+    References:
+        Equations (3) and (6) in Cantin2020        
     """
     if i == 0:
         return P_0  # the first forest receives only the base level of precipitation
     else:
         w = P_0 * np.exp(-np.sum(d[:i]) / l)
-        for j in range(i, i+1):
+        for j in range(i, i+1): # TODO: short iteration here..
             w += B(x[j], y[j]) * np.exp(-np.sum(d[j-1:i]) / l)
         return w
 
-def alpha(x, y, dist, w_0=1, alpha_0=-1):
-    """ Computes the penalty values and returns list of penalty per forest
+
+def alpha(x: List[float], y: List[float], dist: float, w_0=1, alpha_0=-1):
+    """Penalty function for quantity of water received by forest ecosystems.
+   
+    Computes the penalty values and returns list of penalty per forest
+    
+    Args:
+        x: List of young tree species densities for each ecosystem. 
+        y: List of old tree species densities for each ecosystem
+        dist: The distance the `i^th` ecosystem is from the `i+1` ecosystem.
+        w_0: Threshold for 
+        alpha_0: Negative penalty coefficient.
+    
+    References:
+        Equation (8) in Cantin2020
     """
+    assert alpha_0 < 0, "alpha_0 must be negative."
+
+    # Assumes all forests are the same distance from one another
     d = len(x) * [dist]
     
     return [alpha_0 * (1 - w_i(i, x, y, d) / w_0) for i in range(len(x))]
+
 
 def deriv_forest(x, y, penalty_rate, args):
     """
@@ -51,6 +91,7 @@ def deriv_forest(x, y, penalty_rate, args):
     dy = aging_rate * x - mortality_old * y + biotic_pump_old * penalty_rate * y
     
     return dx, dy
+
 
 def system_n_forests(x0s, y0s, args, timesteps = 100, dt = 0.01, dist=42):
     """
