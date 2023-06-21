@@ -1,7 +1,7 @@
 import numpy as np
 
 def alpha(x, y, w_0=1, alpha_0=-1, P_0=1.05):
-    """ Computes the penalty values and returns list of penalty per forest
+    """Calculates the penalty for each forest based on the amount of water it received and returns a list of penalties.
     """
     d = len(x) * [42]       # distance hardcoded to 42km
 
@@ -24,3 +24,5 @@ def alpha(x, y, w_0=1, alpha_0=-1, P_0=1.05):
             return w
     
     return [alpha_0 * (1 - w_i(i, x, y, d) / w_0) for i in range(len(x))]
+
+print(alpha)
