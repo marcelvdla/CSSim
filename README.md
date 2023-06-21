@@ -87,7 +87,10 @@ If Julia is already installed, change to the directory of this project
 and do the following in a command prompt:
 
 ```
-
+julia> using Pkg
+julia> Pkg.install("DrWatson") # only if not already installed
+julia> Pkg.activate(".")
+julia> Pkg.instantiate()
 ```
 
 ## DrWatson Setup
