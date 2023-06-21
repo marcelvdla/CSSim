@@ -1,3 +1,5 @@
+from typing import List, Set
+
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
@@ -75,3 +77,50 @@ def system_n_forests(x0s, y0s, args, timesteps = 100, dt = 0.01):
             y0s[i] += dy * dt
             
     return x_vals, y_vals
+
+
+def theta(t: int, t_star: int):
+    """Models beginning of deforestation process at time t*
+
+    Args: 
+        t: Timestep in integration of dynamical system.
+        t_star: Timestep at which an ecosystem becomes deforested.
+
+    Returns:
+        The deforestation coefficient theta to be used in Equation (18)
+        of Cantin2020.
+
+    References:
+        Equation (16) from Cantin2020
+    """
+
+    A = 2 # constant defined by Cantin2020
+    deforestation_coefficient: float
+
+    if t <= t_star:
+        deforestation_coefficient = 0
+    elif t_star < t and t < t_star + 1:
+        deforestation_coefficient = A/2 - (A/2)*np.cos(np.pi*(t - t_star))
+    else:
+        deforestation_coefficient = A
+    
+    return deforestation_coefficient 
+
+
+def epsilon_k(k: int, random_distinct_integers_i: Set[int]):
+    """Boolean integer for deforestation effect on forest dynamical system.
+
+    Args:
+        k: The integer of the `k^th` ecosystem. 
+        random_distinct_integers_i: Integers corresponding to the i^th
+            ecosystem that will undergo deforestation. This is 
+            `{i_1, ..., i_N}` in Equation (17) Cantin2020.
+
+    Returns:
+        1 if k in the set, 0 otherwise. 
+
+    References:
+        Equation (17) from Cantin2020
+    """
+
+    return k in random_distinct_integers_i 
