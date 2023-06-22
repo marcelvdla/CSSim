@@ -65,7 +65,7 @@ def w_i(
         return w
 
 
-def alpha(x: List[float], y: List[float], dist: float, w_0=1, alpha_0=-1):
+def alpha(x: List[float], y: List[float], dist: float, w_0=1, alpha_0=-1, beta_2=1, P_0=1.05):
     """Penalty function for quantity of water received by forest ecosystems.
    
     Computes the penalty values and returns list of penalty per forest
@@ -85,7 +85,7 @@ def alpha(x: List[float], y: List[float], dist: float, w_0=1, alpha_0=-1):
     # Assumes all forests are the same distance from one another
     d = len(x) * [dist]
     
-    return [alpha_0 * (1 - w_i(i, x, y, d) / w_0) for i in range(len(x))]
+    return [alpha_0 * (1 - w_i(i, x, y, d, beta_2=beta_2, P_0=P_0) / w_0) for i in range(len(x))]
 
 
 def deriv_forest(x, y, penalty_rate, args):
@@ -110,7 +110,7 @@ def deriv_forest(x, y, penalty_rate, args):
     return dx, dy
 
 
-def system_n_forests(x0s, y0s, args, timesteps = 100, dt = 0.01, dist=42):
+def system_n_forests(x0s, y0s, args, timesteps = 100, dt = 0.01, dist=42, beta_2=1):
     """
     Solves a system of ODEs
     INPUT:
@@ -128,7 +128,7 @@ def system_n_forests(x0s, y0s, args, timesteps = 100, dt = 0.01, dist=42):
     y_vals = np.empty((n, int(timesteps)))
     penalty = 0.5
     for t in range(timesteps):
-        penalties = alpha(x0s, y0s, dist)
+        penalties = alpha(x0s, y0s, dist, beta_2=beta_2)
         for i in range(n):
             x_vals[i, t] = x0s[i]
             y_vals[i, t] = y0s[i]
