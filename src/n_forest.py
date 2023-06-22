@@ -23,7 +23,7 @@ def B(xi: float, yi: float, beta_1=0, beta_2=1):
     return beta_1 * xi + beta_2 * yi
 
 
-def w_i(i: int, x: List[float], y:List[float], d: List[float], l=600, P_0=1.05):
+def w_i(i: int, x: List[float], y:List[float], d: List[float], l=600, P_0=1.05, beta_2=1):
     """Water received by ecosystems in network.
 
     This is the biotic pump mechanism.
@@ -43,12 +43,12 @@ def w_i(i: int, x: List[float], y:List[float], d: List[float], l=600, P_0=1.05):
         return P_0  # the first forest receives only the base level of precipitation
     else:
         w = P_0 * np.exp(-np.sum(d[:i]) / l)
-        for j in range(i, i+1): # TODO: short iteration here..
-            w += B(x[j], y[j]) * np.exp(-np.sum(d[j-1:i]) / l)
+        for j in range(1, i+1): # TODO: short iteration here..
+            w += B(x[j], y[j], beta_2=beta_2) * np.exp(-np.sum(d[j-1:i]) / l)
         return w
 
 
-def alpha(x: List[float], y: List[float], dist: float, w_0=1, alpha_0=-1):
+def alpha(x: List[float], y: List[float], dist: float, w_0=1, alpha_0=-1, beta_2=1, P_0=1.05):
     """Penalty function for quantity of water received by forest ecosystems.
    
     Computes the penalty values and returns list of penalty per forest
@@ -68,7 +68,7 @@ def alpha(x: List[float], y: List[float], dist: float, w_0=1, alpha_0=-1):
     # Assumes all forests are the same distance from one another
     d = len(x) * [dist]
     
-    return [alpha_0 * (1 - w_i(i, x, y, d) / w_0) for i in range(len(x))]
+    return [alpha_0 * (1 - w_i(i, x, y, d, beta_2=beta_2, P_0=P_0) / w_0) for i in range(len(x))]
 
 
 def deriv_forest(x, y, penalty_rate, args):
@@ -93,7 +93,7 @@ def deriv_forest(x, y, penalty_rate, args):
     return dx, dy
 
 
-def system_n_forests(x0s, y0s, args, timesteps = 100, dt = 0.01, dist=42):
+def system_n_forests(x0s, y0s, args, timesteps = 100, dt = 0.01, dist=42, beta_2=1):
     """
     Solves a system of ODEs
     INPUT:
@@ -111,7 +111,7 @@ def system_n_forests(x0s, y0s, args, timesteps = 100, dt = 0.01, dist=42):
     y_vals = np.empty((n, int(timesteps)))
     penalty = 0.5
     for t in range(timesteps):
-        penalties = alpha(x0s, y0s, dist)
+        penalties = alpha(x0s, y0s, dist, beta_2=beta_2)
         for i in range(n):
             x_vals[i, t] = x0s[i]
             y_vals[i, t] = y0s[i]
