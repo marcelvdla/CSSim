@@ -1,4 +1,4 @@
-from typing import List, Set, Callable
+from typing import List, Set, Callable, Union
 from typing import NamedTuple
 
 from collections import namedtuple 
@@ -65,7 +65,14 @@ def w_i(
         return w
 
 
-def alpha(x: List[float], y: List[float], dist: float, w_0=1, alpha_0=-1, beta_2=1, P_0=1.05):
+def alpha(
+    x: List[float], 
+    y: List[float], 
+    dist: Union[float, List[float]], 
+    w_0=1, 
+    alpha_0=-1, 
+    beta_2=1, 
+    P_0=1.00):
     """Penalty function for quantity of water received by forest ecosystems.
    
     Computes the penalty values and returns list of penalty per forest
@@ -83,9 +90,15 @@ def alpha(x: List[float], y: List[float], dist: float, w_0=1, alpha_0=-1, beta_2
     assert alpha_0 < 0, "alpha_0 must be negative."
 
     # Assumes all forests are the same distance from one another
-    d = len(x) * [dist]
+    if not isinstance(dist, (np.ndarray, list)):
+        d = len(x) * [dist]
+    else:
+        assert len(dist) == len(x), \
+            "number of distances should match number of forests"
+        d = dist
     
-    return [alpha_0 * (1 - w_i(i, x, y, d, beta_2=beta_2, P_0=P_0) / w_0) for i in range(len(x))]
+    return [alpha_0 * (1 - w_i(i, x, y, d, beta_2=beta_2, P_0=P_0) / w_0) 
+            for i in range(len(x))]
 
 
 def deriv_forest(x, y, penalty_rate, args):
