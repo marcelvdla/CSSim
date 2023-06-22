@@ -75,12 +75,6 @@ sudo ln -s /Applications/Julia-1.9.app/Contents/Resources/julia/bin/julia /usr/l
 
 This code creates a symlink to a Julia version (here 1.9) of your choosing. To launch Julia, simply type julia inside your shell and press return.
 
-*For developers only:*
-
-To setup `Revise.jl`, follow the instructions
-described [here](https://timholy.github.io/Revise.jl/stable/) and make sure
-to modify your `~/.julia/config/startup.jl` to include `using Revise`.
-
 ## Usage
 
 If Julia is already installed, change to the directory of this project
@@ -92,29 +86,6 @@ julia> Pkg.install("DrWatson") # only if not already installed
 julia> Pkg.activate(".")
 julia> Pkg.instantiate()
 ```
-
-## DrWatson Setup
-
-This code base is using the [Julia Language](https://julialang.org/) and
-[DrWatson](https://juliadynamics.github.io/DrWatson.jl/stable/)
-to make a reproducible scientific project named
-> CSSim
-
-To (locally) reproduce this project, do the following:
-
-0. Download this code base. Notice that raw data are typically not included in the
-   git-history and may need to be downloaded independently.
-1. Open a Julia console and do:
-   ```
-   julia> using Pkg
-   julia> Pkg.add("DrWatson") # install globally, for using `quickactivate`
-   julia> Pkg.activate("path/to/this/project")
-   julia> Pkg.instantiate()
-   ```
-
-This will install all necessary packages for you to be able to run the scripts and
-everything should work out of the box, including correctly finding local paths.
-
 You may notice that most scripts start with the commands:
 ```julia
 using DrWatson
@@ -125,6 +96,12 @@ which auto-activate the project and enable local path handling from DrWatson.
 The above syntax is based on [making your DrWatson project a usable module](https://juliadynamics.github.io/DrWatson.jl/stable/real_world/#Making-your-project-a-usable-module-1),
 which was done for the purposes of using `Revise.jl`. See the [discussion](https://discourse.julialang.org/t/best-debug-workflow-for-dr-watson/97234/5)
 here for more information on this. 
+
+*For developers only:*
+
+To setup `Revise.jl`, follow the instructions
+described [here](https://timholy.github.io/Revise.jl/stable/) and make sure
+to modify your `~/.julia/config/startup.jl` to include `using Revise`.
 
 # References
 
