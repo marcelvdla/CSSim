@@ -4,14 +4,40 @@ from typing import List, Optional, Union, Set, NamedTuple, Dict
 from collections import namedtuple
 
 import numpy as np
+from numpy.typing import ArrayLike
 from scipy.integrate import solve_ivp
+from scipy.integrate._ivp.ivp import OdeResult
 
 from src.n_forest import w_i
 
 
-def perturbation_solve():
-    """"""
+def perturbation_solve(T: int, y0: np.ndarray, n_ecosystems: int):
+    """
+
+    Args:
+        y0: Array of shape (n, 2)  n-ecosystems and 2 state variables.
+
+    The first update of states 
+    """
     raise NotImplementedError
+    assert T > 0, "evoluation of system occurs for more than 0 timesteps"
+    assert isinstance(y0, np.ndarray), "initial values are stored in ndarray"
+    assert len(y0) == n_ecosystems, "initial values for each ecosystem"
+
+    t_eval = range(T+1)
+    solutions = np.empty() # TODO
+    for initial_ecosystem_state_i in y0:
+        pass 
+
+    solution_i: OdeResult = solve_ivp(
+        perturbation_rule, [t, T], y0, t_eval=t_eval)
+    
+    for t_ix, t in range(t_eval):
+        current_solution = None
+        for forest_i in range(1, n_ecosystems):
+            pass 
+
+    return 
 
 
 def perturbation_rule(t, state, params: List):
@@ -50,14 +76,42 @@ def perturbation_rule(t, state, params: List):
     return xdot_i, ydot_i
 
 
-def gamma(y, a=1, b=1, c=1):
-    """"""
+def gamma(y, a = 1, b = 1, c = 1):
     return a*(y-b)**2 - c
 
 
-def alpha(xs_to_i, ys_to_i, i):
-    """"""
-    raise NotImplementedError
+def alpha(
+    xs_to_i: List[float], 
+    ys_to_i: List[float], 
+    d_to_i: List[float],
+    i: int, 
+    w_0: float = 1, 
+    alpha_0: float = -1,
+    beta_2: float = 1,
+    l: float = 600,
+    P_0: float = 1):
+    """
+
+    Args:
+        xs_to_i: Densities of young trees up to ecosystem `i`.
+        ys_to_i: Densities of old trees up to ecosystem `i`.
+        d_to_i: Distances up to ecosystem `i`.
+        i: The integer `i` denoting the `i^th` ecosystem.
+        w_0: Threshold for water needed for postive effect on ecosystem.
+        alpha_0: Initial penalty coefficient.
+        beta_2: Water evaporation coefficient of old trees.
+        l: Positive normalization coefficient from size of forested area.
+        P_0: Average water quantity evaporated over nearby maritime zone.
+            For figure 8, this is 1.05, otherwise it is 1.00.
+
+    Returns:
+        TODO
+    
+    References:
+        Equation (8) and (9) in Cantin2020
+    """
+    return alpha_0 *\
+        (1 - w_i(i=i, x=xs_to_i, y=ys_to_i, d=d_to_i, beta_2=beta_2, l=l, P_0=P_0)/w_0)
 
 
 def theta(t: int, t_star: int):
