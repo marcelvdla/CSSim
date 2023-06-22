@@ -26,12 +26,12 @@ def B(xi: float, yi: float, beta_1=0, beta_2=1):
 
 
 def w_i(
-        i: int, 
-        x: List[float], 
-        y: List[float], 
-        d: List[float], 
-        l: float=600, 
-        P_0: float=1.0):
+    i: int, 
+    x: List[float], 
+    y: List[float], 
+    d: List[float], 
+    l: float=600, 
+    P_0: float=1.0):
     """Water received by ecosystems in network.
 
     This is the biotic pump mechanism. Default values from Table 3 in 
@@ -81,7 +81,7 @@ def alpha(
         x: List of young tree species densities for each ecosystem. 
         y: List of old tree species densities for each ecosystem
         dist: The distance the `i^th` ecosystem is from the `i+1` ecosystem.
-        w_0: Threshold for 
+        w_0: Threshold above which densities of trees are positively affected.
         alpha_0: Negative penalty coefficient.
     
     References:
@@ -89,7 +89,7 @@ def alpha(
     """
     assert alpha_0 < 0, "alpha_0 must be negative."
 
-    # Assumes all forests are the same distance from one another
+    # If not a arraylike, then forests all same distance from each other
     if not isinstance(dist, (np.ndarray, list)):
         d = len(x) * [dist]
     else:
@@ -102,19 +102,20 @@ def alpha(
 
 
 def deriv_forest(x, y, penalty_rate, args):
-    """
-    Calculate derivatives of x and y over time as per the Antonovsky & Korzukhin rule.
+    """Calculate derivatives of x and y over time as per the Antonovsky rule.
     
-    INPUT:
-    x            = value for x; density of young trees in ecosystem, typically between 0 and 4
-    y            = value for y; density of old trees in ecosystem, typically between 0 and 4
-    penalty_rate = penalty rate calculated by penalty function
-    args         = tuple of 6 arguments
-    
-    Returns derivatives of x and y.
+    Args:
+        x: Density of young trees in ecosystem, typically between 0 and 4.
+        y: Density of old trees in ecosystem, typically between 0 and 4.
+        penalty_rate: Penalty rate calculated by penalty function.
+        args: Tuple of 6 arguments representing parameters of dynamical system.
+        
+    Returns:
+        derivatives of x and y.
     """
     # Unpack arguments rho, gamma (not used), f, h, a1 and a2
-    fertility, mortality_young, aging_rate, biotic_pump_young, mortality_old, biotic_pump_old = args
+    fertility, mortality_young, aging_rate, \
+    biotic_pump_young, mortality_old, biotic_pump_old = args
     
     # Calculate derivatives
     dx = fertility * y - ((y - 1)**2 + 1) * x - aging_rate * x + biotic_pump_young * penalty_rate * x
@@ -124,16 +125,19 @@ def deriv_forest(x, y, penalty_rate, args):
 
 
 def system_n_forests(x0s, y0s, args, timesteps = 100, dt = 0.01, dist=42, beta_2=1):
-    """
-    Solves a system of ODEs
-    INPUT:
-    x0s       = array of values for x, the density of young trees in the ecosystem; typically between 0 and 4
-    y0s       = array of values for y, the density of old trees in the ecosystem; typically between 0 and 4
-    args      = tuple of arguments needed for the derivation function
-    timesteps = int, timesteps to iterate over; default 100
-    dt        = delta time, default 0.01
+    """Solve the system of ODEs of the Antonovosky rule using forward euler.
+
+    Args:
+        x0s: array of values for x, the density of young trees in the ecosystem; 
+            typically between 0 and 4.
+        y0s: array of values for y, the density of old trees in the ecosystem; 
+            typically between 0 and 4.
+        args: tuple of arguments needed for the derivation function
+        timesteps: int, timesteps to iterate over; default 100
+        dt: Delta time, default 0.01
     
-    Returns two arrays of x and y values per time
+    Returns:
+        Two arrays of x and y values per time
     """
        
     n = len(x0s)
