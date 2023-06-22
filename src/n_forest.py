@@ -30,8 +30,9 @@ def w_i(
     x: List[float], 
     y: List[float], 
     d: List[float], 
+    beta_2: float=1,
     l: float=600, 
-    P_0: float=1.0):
+    P_0: float=1.0,):
     """Water received by ecosystems in network.
 
     This is the biotic pump mechanism. Default values from Table 3 in 
@@ -55,13 +56,13 @@ def w_i(
         return P_0     
     elif i == 1:
         # equation (5)
-        w = (P_0 + B(x[0], y[0])) * np.exp(-d[0] / l)
+        w = (P_0 + B(x[0], y[0], beta_2=beta_2)) * np.exp(-d[0] / l)
         return w
     else: 
         # equation (6)
-        w = (P_0 + B(x[0], y[0])) * np.exp(-np.sum(d[0:i]) / l)
+        w = (P_0 + B(x[0], y[0], beta_2=beta_2)) * np.exp(-np.sum(d[0:i]) / l)
         for j in range(1, i+1):
-            w += B(x[j], y[j]) * np.exp(-np.sum(d[j:i]) / l)
+            w += B(x[j], y[j], beta_2=beta_2) * np.exp(-np.sum(d[j:i]) / l)
         return w
 
 
