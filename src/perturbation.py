@@ -19,7 +19,6 @@ def perturbation_solve(T: int, y0: np.ndarray, n_ecosystems: int):
 
     The first update of states 
     """
-    raise NotImplementedError
     assert T > 0, "evoluation of system occurs for more than 0 timesteps"
     assert isinstance(y0, np.ndarray), "initial values are stored in ndarray"
     assert len(y0) == n_ecosystems, "initial values for each ecosystem"
@@ -142,14 +141,17 @@ def theta(t: int, t_star: int):
     return deforestation_coefficient 
 
 
-def epsilon_k(k: int, random_distinct_integers_i: Set[int]):
+def epsilon_k(
+        k: int, 
+        ecosytem_ids: Union[Set[int], List[NamedTuple]]):
     """Boolean integer for deforestation effect on forest dynamical system.
 
     Args:
         k: The integer of the `k^th` ecosystem. 
-        random_distinct_integers_i: Integers corresponding to the i^th
+        ecosystem_ids: Integers corresponding to the i^th
             ecosystem that will undergo deforestation. This is 
-            `{i_1, ..., i_N}` in Equation (17) Cantin2020.
+            `{i_1, ..., i_N}` in Equation (17) Cantin2020. This could also
+            just be a list of EcosystemDeforestTime named tuples.
 
     Returns:
         1 if k in the set, 0 otherwise. 
@@ -157,8 +159,10 @@ def epsilon_k(k: int, random_distinct_integers_i: Set[int]):
     References:
         Equation (17) from Cantin2020
     """
-
-    return k in random_distinct_integers_i 
+    if isinstance(ecosytem_ids, list) \
+        and isinstance(ecosytem_ids[0], namedtuple):
+        ecosytem_ids = {ecosystem.ecosystem_id for ecosystem in ecosytem_ids}
+    return k in ecosytem_ids
 
 
 def randomly_perturb_ecosystems(
