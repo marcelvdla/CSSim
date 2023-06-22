@@ -11,6 +11,8 @@ from scipy.integrate import solve_ivp
 def B(xi: float, yi: float, beta_1=0, beta_2=1):
     """Return quantity of water evaporated over `i^th` forest.
 
+    Default values from Table 3 in Cantin2020
+
     Args:
         xi: Density of young tree species in `i^th` forest.
         yi: Density of old tree spcies in `i^th` forest.
@@ -23,10 +25,17 @@ def B(xi: float, yi: float, beta_1=0, beta_2=1):
     return beta_1 * xi + beta_2 * yi
 
 
-def w_i(i: int, x: List[float], y:List[float], d: List[float], l=600, P_0=1.05):
+def w_i(
+        i: int, 
+        x: List[float], 
+        y: List[float], 
+        d: List[float], 
+        l: float=600, 
+        P_0: float=1.0):
     """Water received by ecosystems in network.
 
-    This is the biotic pump mechanism.
+    This is the biotic pump mechanism. Default values from Table 3 in 
+    Cantin2020. 
     
     Args:
         i: `i^th` forest.
@@ -35,16 +44,24 @@ def w_i(i: int, x: List[float], y:List[float], d: List[float], l=600, P_0=1.05):
         d: List of distances where `d_i` is distance between forest `i` and `i+1`.
         l: Positive normalization coefficient from size of forested area.
         P_0: Average water quantity evaporated over nearby maritime zone.
+            For figure 8, this is 1.05, otherwise it is 1.00.
 
     References:
         Equations (3) and (6) in Cantin2020        
     """
     if i == 0:
-        return P_0  # the first forest receives only the base level of precipitation
-    else:
-        w = P_0 * np.exp(-np.sum(d[:i]) / l)
-        for j in range(i, i+1): # TODO: short iteration here..
-            w += B(x[j], y[j]) * np.exp(-np.sum(d[j-1:i]) / l)
+        # the first forest receives only the base level of precipitation
+        # equation (3)
+        return P_0     
+    elif i == 1:
+        # equation (5)
+        w = (P_0 + B(x[0], y[0])) * np.exp(-d[0] / l)
+        return w
+    else: 
+        # equation (6)
+        w = (P_0 + B(x[0], y[0])) * np.exp(-np.sum(d[0:i]) / l)
+        for j in range(1, i+1):
+            w += B(x[j], y[j]) * np.exp(-np.sum(d[j:i]) / l)
         return w
 
 
