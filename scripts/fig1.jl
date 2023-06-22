@@ -21,7 +21,7 @@ using Random
 using Plots
 using ChaosTools
 @quickactivate :CSSim
-include(joinpath(srcdir(), "one_forest_system.jl"))
+include(joinpath(srcdir(), "n_forest.jl"))
 
 # +
 # Define parameters

@@ -76,7 +76,10 @@ def alpha(
     P_0=1.00):
     """Penalty function for quantity of water received by forest ecosystems.
    
-    Computes the penalty values and returns list of penalty per forest
+    Computes the penalty values and returns list of penalty per forest.
+    
+    TODO: This function should likely be simplified because this might introduce
+    complications to the dynamical system (solve_ivp).
     
     Args:
         x: List of young tree species densities for each ecosystem. 
@@ -86,7 +89,7 @@ def alpha(
         alpha_0: Negative penalty coefficient.
     
     References:
-        Equation (8) in Cantin2020
+        Equation (8) and (9) in Cantin2020
     """
     assert alpha_0 < 0, "alpha_0 must be negative."
 
