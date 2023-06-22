@@ -11,34 +11,6 @@ from scipy.integrate._ivp.ivp import OdeResult
 from src.n_forest import w_i
 
 
-def perturbation_solve(T: int, y0: np.ndarray, n_ecosystems: int):
-    """
-
-    Args:
-        y0: Array of shape (n, 2)  n-ecosystems and 2 state variables.
-
-    The first update of states 
-    """
-    assert T > 0, "evoluation of system occurs for more than 0 timesteps"
-    assert isinstance(y0, np.ndarray), "initial values are stored in ndarray"
-    assert len(y0) == n_ecosystems, "initial values for each ecosystem"
-
-    t_eval = range(T+1)
-    solutions = np.empty() # TODO
-    for initial_ecosystem_state_i in y0:
-        pass 
-
-    solution_i: OdeResult = solve_ivp(
-        perturbation_rule, [t, T], y0, t_eval=t_eval)
-    
-    for t_ix, t in range(t_eval):
-        current_solution = None
-        for forest_i in range(1, n_ecosystems):
-            pass 
-
-    return 
-
-
 def perturbation_rule(t, u, params: List):
     """General form of perturbed `i^th` dynamical ecosystem.
 
@@ -52,34 +24,62 @@ def perturbation_rule(t, u, params: List):
         t: Timestep argument required by scipy.
         u: A state vector of shape [n * 2]. Element `i` is density of 
             young trees and element `i+1` is the density of old trees.
-        params: Parameters for ecosystem dynamics. Parameters should be passed
-            in the same order of appearance in equation (18) read from left
-            to right and then top to bottom.
+        params: Parameters for ecosystem dynamics. Parameters should be
+            passed exactly in this order.
             - rho: Fertility of tree species.
             - f: Aging rate of young trees.
             - a_1: Biotic pump weight of young trees.
             - h: Mortality rate of old trees.
             - a_2: Biotic pump weight of old trees.
+            - dists: Distance between `i` and `i+1` ecosystem.
+            - w_0: Threshold for water needed for postive effect on ecosystem.
+            - alpha_0: Initial penalty coefficient.
+            - beta_2: Water evaporation coefficient of old trees.
+            - l: Positive normalization coefficient from size of forested area.
+            - P_0: Average water quantity evaporated over nearby maritime zone.
+                For figure 8, this is 1.05, otherwise it is 1.00.
+            - ecosystem_id_t_star: List of namedtuple's with `ecosystem_id` and
+                `t_star` fields indicating deforestation time of ecosystem.
+            - n_ecosystems: Number of ecosystems.
 
     Returns:
-        Density of young and old species of trees, respectively.
+        A vector where each even index is `x_i` and each odd index is `y_i`
+        for `i in range(n_ecosystems)`.
 
     References:
         Equation (18) in Cantin2020
     """
     # Extract parameters
-    rho, f, a_1, h, a_2, \
-        dists, w_0, alpha_0, beta_2, \
-        l, P_0, ecosystem_id_t_star, n_ecosystems = params 
+    rho,  \
+    f,  \
+    a_1, \
+    h, \
+    a_2, \
+    dists, \
+    w_0, \
+    alpha_0, \
+    beta_2, \
+    l, \
+    P_0, \
+    ecosystem_id_t_star, \
+    n_ecosystems = params 
     
     # iterate through ecosystems and compute new values
     n_state_vars = 2
     du = np.empty(shape=(n_ecosystems * n_state_vars,))
     du_counter = 0
     for i in range(n_ecosystems):
+        # TODO: is this getting the appropriate ecosystem vectors...
+        raise NotImplementedError
         x_i, y_i = u[du_counter], u[du_counter+1]
         xs_to_i = u[0:(2*i)+1:n_state_vars]
         ys_to_i = u[1:(2*i)+2:n_state_vars]
+
+        try: 
+            # never prints...
+            print(i, len(x_i), len(y_i))
+        except:
+            pass 
 
         alpha_i = alpha(
             xs_to_i=xs_to_i, 
