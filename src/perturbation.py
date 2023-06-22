@@ -39,25 +39,25 @@ def perturbation_solve(T: int, y0: np.ndarray, n_ecosystems: int):
     return 
 
 
-def perturbation_rule(t, state, params: List):
+def perturbation_rule(t, u, params: List):
     """General form of perturbed `i^th` dynamical ecosystem.
 
-    NOTE: In principle, setting the epsilon parameter always to 0 would
+    NOTE: In principle, setting the epsilon parameter to none
     reproduce the general system without perturbation.
+
+    TODO: If state \in R^{n x 2}, then this drastically simplifies
+    the interdependency problem ( i think .... )
 
     Args:
         t: Timestep argument required by scipy.
-        state: A state vector whose first element is density of young
-            trees and second element is density of old trees.
+        u: A state vector of shape [n * 2]. Element `i` is density of 
+            young trees and element `i+1` is the density of old trees.
         params: Parameters for ecosystem dynamics. Parameters should be passed
             in the same order of appearance in equation (18) read from left
             to right and then top to bottom.
             - rho: Fertility of tree species.
             - f: Aging rate of young trees.
             - a_1: Biotic pump weight of young trees.
-            - alpha_i: Penalty weight for high/low water received by forest `i`.
-            - epsilon_i: Perturbation of system bool at timestep t.
-            - theta_i: Models beginning of deforestation of forest `i` at `t`.
             - h: Mortality rate of old trees.
             - a_2: Biotic pump weight of old trees.
 
@@ -67,15 +67,56 @@ def perturbation_rule(t, state, params: List):
     References:
         Equation (18) in Cantin2020
     """
-    rho, f, a_1, alpha_i, epsilson_i, theta_i, h, a_2 = params 
-    x_i, y_i = state 
-    xdot_i = rho*y_i - gamma(y_i)*x_i - f*x_i + a_1*alpha_i*x_i \
-        - epsilson_i*theta_i*x_i
-    ydot_i = f*x_i - h*y_i + a_2*alpha_i*y_i - epsilson_i*theta_i*y_i
-    return xdot_i, ydot_i
+    # Extract parameters
+    rho, f, a_1, h, a_2, \
+        dists, w_0, alpha_0, beta_2, \
+        l, P_0, ecosystem_id_t_star, n_ecosystems = params 
+    
+    # iterate through ecosystems and compute new values
+    n_state_vars = 2
+    du = np.empty(shape=(n_ecosystems * n_state_vars,))
+    du_counter = 0
+    for i in range(n_ecosystems):
+        x_i, y_i = u[du_counter], u[du_counter+1]
+        xs_to_i = u[0:(2*i)+1:n_state_vars]
+        ys_to_i = u[1:(2*i)+2:n_state_vars]
+
+        alpha_i = alpha(
+            xs_to_i=xs_to_i, 
+            ys_to_i=ys_to_i,
+            d_to_i=dists[:i],
+            i=i,
+            w_0=w_0,
+            alpha_0=alpha_0,
+            beta_2=beta_2,
+            l=l,
+            P_0=P_0)
+        
+        # Determine deforestation phenomena
+        if ecosystem_id_t_star is None:
+            epsilon_i = 0
+            theta_i = 0
+        else:
+            epsilon_i = epsilon_k(
+                k=i, ecosytem_ids=ecosystem_id_t_star.ecoystem_id)
+            theta_i = theta(t=t, t_star=ecosystem_id_t_star.t_star)
+
+        # Compute change in densities of forest ecosystem i
+        xdot_i = rho*y_i - gamma(y_i)*x_i - f*x_i \
+            + a_1*alpha_i*x_i \
+            - epsilon_i*theta_i*x_i
+        ydot_i = f*x_i - h*y_i + a_2*alpha_i*y_i - epsilon_i*theta_i*y_i
+
+        # Update derivative of state vector
+        du[du_counter] = xdot_i
+        du[du_counter+1] = ydot_i
+        du_counter += n_state_vars
+
+    return du
 
 
 def gamma(y, a = 1, b = 1, c = 1):
+    """Mortality rate of young trees."""
     return a*(y-b)**2 - c
 
 
@@ -89,7 +130,7 @@ def alpha(
     beta_2: float = 1,
     l: float = 600,
     P_0: float = 1):
-    """
+    """Penalty function for ecosystems receiving optimal/suboptimal water.
 
     Args:
         xs_to_i: Densities of young trees up to ecosystem `i`.
@@ -104,7 +145,7 @@ def alpha(
             For figure 8, this is 1.05, otherwise it is 1.00.
 
     Returns:
-        TODO
+        Penalty coefficient.
     
     References:
         Equation (8) and (9) in Cantin2020
