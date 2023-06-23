@@ -11,7 +11,7 @@ from numpy.typing import ArrayLike
 from scipy.integrate import solve_ivp
 from scipy.integrate._ivp.ivp import OdeResult
 
-from src.n_forest import w_i
+from src.common import w_i
 
 
 def perturbation_rule(t, u, params: List):
