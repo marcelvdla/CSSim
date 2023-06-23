@@ -63,6 +63,8 @@ def perturbation_rule(t, u, params: List):
         Equation (18) in Cantin2020
     """
     # Extract parameters
+    ecosystem_id_t_star: List[EcosystemDeforestTime]
+    
     rho,  \
     f,  \
     a_1, \
@@ -121,7 +123,7 @@ def perturbation_rule(t, u, params: List):
             theta_i = 0
         else:
             epsilon_i = epsilon_k(
-                k=i, ecosytem_ids=ecosystem_id_t_star.ecoystem_id)
+                k=i, ecosytem_ids=ecosystem_id_t_star)
             theta_i = theta(t=t, t_star=ecosystem_id_t_star.t_star)
 
         # Compute change in densities of forest ecosystem i
