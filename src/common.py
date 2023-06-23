@@ -38,6 +38,8 @@ def w_i(
     This is the biotic pump mechanism. Default values from Table 3 in
     Cantin2020.
 
+    TODO: Write unit test here because this evaporation seems to be the problem
+
     Args:
         i: `i^th` forest.
         x: List of densities of young trees for N ecosystems.
@@ -96,9 +98,9 @@ def alpha(
 
     # If not a arraylike, then forests all same distance from each other
     if not isinstance(dist, (np.ndarray, list)):
-        d = len(x) * [dist]
+        d = (len(x) - 1) * [dist]
     else:
-        assert len(dist) == len(x), \
+        assert len(dist) == (len(x) - 1), \
             "number of distances should match number of forests"
         d = dist
 
