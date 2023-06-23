@@ -98,6 +98,9 @@ def perturbation_rule(t, u, params: List):
         ys_to_i = u[1:(2*i)+2:n_state_vars]
         
         # determine penalty parameter
+        # if dists is None then you have a single forest system,
+        # therefore, to convert the system of equations to a single
+        # forest system, sets alpha_i = 0
         if dists is not None:
             alpha_i = alpha(
                 xs_to_i=xs_to_i, 
