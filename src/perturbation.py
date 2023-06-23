@@ -300,6 +300,8 @@ def get_ecosystems_to_perturb_at_times_tstar(
 
 @dataclass
 class EcosystemDeforestTime:
+    """Stores `ecosystem_id` and time `t_star` at which deforestation occurs."""
+
     ecosystem_id: int
     t_star: int
 
