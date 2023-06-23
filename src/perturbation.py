@@ -12,13 +12,20 @@ from src.n_forest import w_i
 
 
 def perturbation_rule(t, u, params: List):
-    """General form of perturbed `i^th` dynamical ecosystem.
+    """Perturbation rule as single system of equations.
 
-    NOTE: In principle, setting the epsilon parameter to none
-    reproduce the general system without perturbation.
+    This rule is treated as a system of coupled ODE's, so I don't think
+    it meets the "master-slave" relationship that is required in the paper.
+    Though the alternative would be do something like the following:
 
-    TODO: If state \in R^{n x 2}, then this drastically simplifies
-    the interdependency problem ( i think .... )
+    ```
+    x0, y0 = solve(perturbed_rule, i=0, u0)
+    x1, y1 = solve(perturbed_rule, i=1, u1)
+    x2, y2 = solve(perturbed_rule, i=2, u2, args=((x0,y0), (x1, y1)))
+    ...
+    xn-1,yn-1 = solve(
+        perturbed_rule, i=n-1, un-1, args=((xi,yi) for i in range(n))
+    ```
 
     Args:
         t: Timestep argument required by scipy.
@@ -28,9 +35,11 @@ def perturbation_rule(t, u, params: List):
             passed exactly in this order.
             - rho: Fertility of tree species.
             - f: Aging rate of young trees.
-            - a_1: Biotic pump weight of young trees.
+            - a_1: Biotic pump weight of young trees. Must be 0 if you want
+                1 forest model.
             - h: Mortality rate of old trees.
-            - a_2: Biotic pump weight of old trees.
+            - a_2: Biotic pump weight of old trees. Must be 0 if you want 
+                1 forest model.
             - dists: Distance between `i` and `i+1` ecosystem.
             - w_0: Threshold for water needed for postive effect on ecosystem.
             - alpha_0: Initial penalty coefficient.
@@ -39,7 +48,8 @@ def perturbation_rule(t, u, params: List):
             - P_0: Average water quantity evaporated over nearby maritime zone.
                 For figure 8, this is 1.05, otherwise it is 1.00.
             - ecosystem_id_t_star: List of namedtuple's with `ecosystem_id` and
-                `t_star` fields indicating deforestation time of ecosystem.
+                `t_star` fields indicating deforestation time of ecosystem. Must
+                be `None` if you don't want to perturb the system.
             - n_ecosystems: Number of ecosystems.
 
     Returns:
@@ -70,6 +80,7 @@ def perturbation_rule(t, u, params: List):
     du_counter = 0
     for i in range(n_ecosystems):
         # TODO: is this getting the appropriate ecosystem vectors...
+        # TODO: Check if correct for 1 ecosystem... (i.e., phase space)
         raise NotImplementedError
         x_i, y_i = u[du_counter], u[du_counter+1]
         xs_to_i = u[0:(2*i)+1:n_state_vars]
