@@ -64,7 +64,7 @@ def perturbation_rule(t, u, params: List):
     """
     # Extract parameters
     ecosystem_id_t_star: List[EcosystemDeforestTime]
-    
+
     rho,  \
     f,  \
     a_1, \
@@ -122,9 +122,8 @@ def perturbation_rule(t, u, params: List):
             epsilon_i = 0
             theta_i = 0
         else:
-            epsilon_i = epsilon_k(
-                k=i, ecosytem_ids=ecosystem_id_t_star)
-            theta_i = theta(t=t, t_star=ecosystem_id_t_star.t_star)
+            epsilon_i = epsilon_k(k=i, ecosytem_ids=ecosystem_id_t_star)
+            theta_i = theta(t=t, t_star=ecosystem_id_t_star[i].t_star)
 
         # Compute change in densities of forest ecosystem i
         xdot_i = rho*y_i - gamma(y_i)*x_i - f*x_i \
