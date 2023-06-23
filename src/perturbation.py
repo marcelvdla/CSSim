@@ -75,13 +75,15 @@ def perturbation_rule(t, u, params: List):
     n_ecosystems = params 
 
     assert n_ecosystems > 0, "n_ecosystems must be at least 1"
+    
+    # Remove perturbation and biotic pump terms from dynamical system
     if n_ecosystems == 1:
         a_1 = 0
         a_2 = 0
         ecosystem_id_t_star = None
         dists = None
     else:
-        assert len(dists) == n_ecosystems, "same number of dists as ecosystems"
+        assert len(dists) == (n_ecosystems - 1), "n-1 dists provided"
     
     # iterate through ecosystems and compute new values
     n_state_vars = 2
@@ -97,7 +99,7 @@ def perturbation_rule(t, u, params: List):
             alpha_i = alpha(
                 xs_to_i=xs_to_i, 
                 ys_to_i=ys_to_i,
-                d_to_i=dists[:i],
+                d_to_i=dists[:i], # TODO: This could be wrong??
                 i=i,
                 w_0=w_0,
                 alpha_0=alpha_0,
@@ -132,7 +134,7 @@ def perturbation_rule(t, u, params: List):
 
 def gamma(y, a = 1, b = 1, c = 1):
     """Mortality rate of young trees."""
-    return a*(y-b)**2 - c
+    return a*(y-b)**2 + c
 
 
 def alpha(
