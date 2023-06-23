@@ -126,7 +126,7 @@ def deriv_forest(x, y, penalty_rate, args):
     mortality_old, biotic_pump_old, dist, beta_2, P_0 = args
 
     # Calculate derivatives
-    dx = fertility * y - ((y - 1)**2 + 1) * x - aging_rate * x
+    dx = fertility * y - ((y - 1)**2 + 1) * x - aging_rate * x \
         + biotic_pump_young * penalty_rate * x
     dy = aging_rate * x - mortality_old * y + biotic_pump_old * penalty_rate * y
 
