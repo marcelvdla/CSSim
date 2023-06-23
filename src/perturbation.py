@@ -43,7 +43,8 @@ def perturbation_rule(t, u, params: List):
             - h: Mortality rate of old trees.
             - a_2: Biotic pump weight of old trees. Must be 0 if you want 
                 1 forest model.
-            - dists: Distance between `i` and `i+1` ecosystem.
+            - dists: Distance between `i` and `i+1` ecosystem. Pass None if
+                this is a single forest system.
             - w_0: Threshold for water needed for postive effect on ecosystem.
             - alpha_0: Initial penalty coefficient.
             - beta_2: Water evaporation coefficient of old trees.
@@ -92,12 +93,18 @@ def perturbation_rule(t, u, params: List):
     
     # iterate through ecosystems and compute new values
     n_state_vars = 2
-    du = np.empty(shape=(n_ecosystems * n_state_vars,))
-    du_counter = 0
+    du = np.empty(shape=(n_ecosystems, n_state_vars))
+    u = u.reshape((n_ecosystems, n_state_vars))
+
     for i in range(n_ecosystems):
-        x_i, y_i = u[du_counter], u[du_counter+1]
-        xs_to_i = u[0:(2*i)+1:n_state_vars]
-        ys_to_i = u[1:(2*i)+2:n_state_vars]
+        x_i, y_i = u[i, 0], u[i, 1]
+
+        # Get the state variables from [0..i-1]
+        # based on equation (6) requirements of w_i+1 = ...
+        # e.g., w_3 therefore i = 2
+        # so x1, x2 and y1, y2 are needed
+        xs_to_i = u[:i, 0]
+        ys_to_i = u[:i, 1]
         
         # determine penalty parameter
         # if dists is None then you have a single forest system,
@@ -107,7 +114,7 @@ def perturbation_rule(t, u, params: List):
             alpha_i = alpha(
                 xs_to_i=xs_to_i, 
                 ys_to_i=ys_to_i,
-                d_to_i=dists[:i], # TODO: This could be wrong??
+                d_to_i=dists[:i],
                 i=i,
                 w_0=w_0,
                 alpha_0=alpha_0,
@@ -131,12 +138,12 @@ def perturbation_rule(t, u, params: List):
             - epsilon_i*theta_i*x_i
         ydot_i = f*x_i - h*y_i + a_2*alpha_i*y_i - epsilon_i*theta_i*y_i
 
-        # Update derivative of state vector
-        du[du_counter] = xdot_i
-        du[du_counter+1] = ydot_i
-        du_counter += n_state_vars
+        # Update derivative of state vector for ecosystem i and 
+        # state variable 0 (x) and 1 (y)
+        du[i, 0] = xdot_i
+        du[i, 1] = ydot_i
 
-    return du
+    return du.flatten()
 
 
 def gamma(y, a = 1, b = 1, c = 1):
