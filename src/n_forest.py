@@ -7,6 +7,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 
+from src.perturbation import (
+    get_ecosystems_to_perturb_at_times_tstar,
+    theta,
+    epsilon_k,
+    EcosystemDeforestTime
+)
+
 
 def B(xi: float, yi: float, beta_1=0, beta_2=1):
     """Return quantity of water evaporated over `i^th` forest.
@@ -162,6 +169,12 @@ def system_n_forests(x0s, y0s, args, timesteps = 100, dt = 0.01, dist=42, beta_2
     x_vals = np.empty((n, int(timesteps/dt)))
     y_vals = np.empty((n, int(timesteps/dt)))
 
+    # deforest_ecosystem_at_t: List[EcosystemDeforestTime] = \
+    #     get_ecosystems_to_perturb_at_times_tstar(
+    #         t_timesteps=int(timesteps/dt),
+    #         n_deforested_ecosystems=2, # make this 1 or 2 based on table 4 N
+    #         n_total_ecosystems=n,)
+
     for t in range(int(timesteps / dt)):
         penalties = alpha(x0s, y0s, dist=args[6]/(n-1), beta_2 = args[7],
                           P_0 = args[8])
@@ -169,6 +182,11 @@ def system_n_forests(x0s, y0s, args, timesteps = 100, dt = 0.01, dist=42, beta_2
 
             x_vals[i, t] = x0s[i]
             y_vals[i, t] = y0s[i]
+
+            # epsilon_i = epsilon_k(
+            #     k=i, ecosytem_ids=deforest_ecosystem_at_t)
+            # theta_i = theta(
+            #     t=t, t_star=deforest_ecosystem_at_t[i].t_star)
 
             dx, dy = deriv_forest(x0s[i], y0s[i], penalties[i], args)
             x0s[i] += dx * dt
