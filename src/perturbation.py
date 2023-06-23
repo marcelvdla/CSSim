@@ -1,7 +1,10 @@
 """Perturb the complex network with deforestation."""
 
-from typing import List, Optional, Union, Set, NamedTuple, Dict 
+from __future__ import annotations
+
+from typing import List, Optional, Union, Set, NamedTuple, Dict
 from collections import namedtuple
+from dataclasses import dataclass
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -201,7 +204,7 @@ def theta(t: int, t_star: int):
 
 def epsilon_k(
         k: int, 
-        ecosytem_ids: Union[Set[int], List[NamedTuple]]):
+        ecosytem_ids: Union[Set[int], List[EcosystemDeforestTime]]):
     """Boolean integer for deforestation effect on forest dynamical system.
 
     Args:
@@ -223,12 +226,12 @@ def epsilon_k(
     return k in ecosytem_ids
 
 
-def randomly_perturb_ecosystems(
+def get_ecosystems_to_perturb_at_times_tstar(
         t_timesteps: int, 
         n_deforested_ecosystems: int, 
         n_total_ecosystems: int,
-        seed: int = 42) -> List[NamedTuple]:
-    """Randomly perturb ecosystems at random timesteps
+        seed: int = 42) -> EcosystemDeforestTime:
+    """Get list where elements are ecosytem id and tstep at which deforestation occurs.
 
     Example:
 
@@ -251,7 +254,7 @@ def randomly_perturb_ecosystems(
         n_total_ecosystems: Total number of ecosystems.    
 
     Returns:
-        A list of named tuples. The named tuple has a `ecosystem_id` and `t_star`
+        A list of EcosystemDeforestTime. The elemnts has a `ecosystem_id` and `t_star`
         property. The `ecosystem_id` is deforested at time `t_star` according to 
         the `epsilon_k` and `theta` functions defined in this file.
 
@@ -273,8 +276,6 @@ def randomly_perturb_ecosystems(
     
     # combine the ecosystems and timesteps into a list of tuples
     ecosystem_time_tuples = []
-    EcosystemDeforestTime = namedtuple(
-        "EcosystemDeforestTime", ["ecosystem_id", "t_star"])
 
     for i in range(len(ecosystem_ids_to_deforest)):
         ecosystem_time_tuple = EcosystemDeforestTime(
@@ -284,3 +285,14 @@ def randomly_perturb_ecosystems(
         ecosystem_time_tuples.append(ecosystem_time_tuple)
 
     return ecosystem_time_tuples
+
+
+@dataclass
+class EcosystemDeforestTime:
+    ecosystem_id: int
+    t_star: int
+
+    def __repr__(self) -> str:
+        myrepr = f"EcosystemDeforestTime(ecosystem_id={self.ecosystem_id}"
+        myrepr += f", t_star={self.t_star})"
+        return myrepr
