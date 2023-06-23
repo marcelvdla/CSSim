@@ -232,7 +232,7 @@ def epsilon_k(
         Equation (17) from Cantin2020
     """
     if isinstance(ecosytem_ids, list) \
-        and isinstance(ecosytem_ids[0], namedtuple):
+        and isinstance(ecosytem_ids[0], EcosystemDeforestTime):
         ecosytem_ids = {ecosystem.ecosystem_id for ecosystem in ecosytem_ids}
     return k in ecosytem_ids
 
