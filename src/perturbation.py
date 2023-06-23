@@ -73,35 +73,39 @@ def perturbation_rule(t, u, params: List):
     P_0, \
     ecosystem_id_t_star, \
     n_ecosystems = params 
+
+    assert n_ecosystems > 0, "n_ecosystems must be at least 1"
+    if n_ecosystems == 1:
+        a_1 = 0
+        a_2 = 0
+        ecosystem_id_t_star = None
+        dists = None
+    else:
+        assert len(dists) == n_ecosystems, "same number of dists as ecosystems"
     
     # iterate through ecosystems and compute new values
     n_state_vars = 2
     du = np.empty(shape=(n_ecosystems * n_state_vars,))
     du_counter = 0
     for i in range(n_ecosystems):
-        # TODO: is this getting the appropriate ecosystem vectors...
-        # TODO: Check if correct for 1 ecosystem... (i.e., phase space)
-        raise NotImplementedError
         x_i, y_i = u[du_counter], u[du_counter+1]
         xs_to_i = u[0:(2*i)+1:n_state_vars]
         ys_to_i = u[1:(2*i)+2:n_state_vars]
-
-        try: 
-            # never prints...
-            print(i, len(x_i), len(y_i))
-        except:
-            pass 
-
-        alpha_i = alpha(
-            xs_to_i=xs_to_i, 
-            ys_to_i=ys_to_i,
-            d_to_i=dists[:i],
-            i=i,
-            w_0=w_0,
-            alpha_0=alpha_0,
-            beta_2=beta_2,
-            l=l,
-            P_0=P_0)
+        
+        # determine penalty parameter
+        if dists is not None:
+            alpha_i = alpha(
+                xs_to_i=xs_to_i, 
+                ys_to_i=ys_to_i,
+                d_to_i=dists[:i],
+                i=i,
+                w_0=w_0,
+                alpha_0=alpha_0,
+                beta_2=beta_2,
+                l=l,
+                P_0=P_0)
+        else:
+            alpha_i = 0
         
         # Determine deforestation phenomena
         if ecosystem_id_t_star is None:
