@@ -11,73 +11,130 @@ from scipy.integrate._ivp.ivp import OdeResult
 from src.n_forest import w_i
 
 
-def perturbation_solve(T: int, y0: np.ndarray, n_ecosystems: int):
-    """
+def perturbation_rule(t, u, params: List):
+    """Perturbation rule as single system of equations.
 
-    Args:
-        y0: Array of shape (n, 2)  n-ecosystems and 2 state variables.
+    This rule is treated as a system of coupled ODE's, so I don't think
+    it meets the "master-slave" relationship that is required in the paper.
+    Though the alternative would be do something like the following:
 
-    The first update of states 
-    """
-    raise NotImplementedError
-    assert T > 0, "evoluation of system occurs for more than 0 timesteps"
-    assert isinstance(y0, np.ndarray), "initial values are stored in ndarray"
-    assert len(y0) == n_ecosystems, "initial values for each ecosystem"
-
-    t_eval = range(T+1)
-    solutions = np.empty() # TODO
-    for initial_ecosystem_state_i in y0:
-        pass 
-
-    solution_i: OdeResult = solve_ivp(
-        perturbation_rule, [t, T], y0, t_eval=t_eval)
-    
-    for t_ix, t in range(t_eval):
-        current_solution = None
-        for forest_i in range(1, n_ecosystems):
-            pass 
-
-    return 
-
-
-def perturbation_rule(t, state, params: List):
-    """General form of perturbed `i^th` dynamical ecosystem.
-
-    NOTE: In principle, setting the epsilon parameter always to 0 would
-    reproduce the general system without perturbation.
+    ```
+    x0, y0 = solve(perturbed_rule, i=0, u0)
+    x1, y1 = solve(perturbed_rule, i=1, u1)
+    x2, y2 = solve(perturbed_rule, i=2, u2, args=((x0,y0), (x1, y1)))
+    ...
+    xn-1,yn-1 = solve(
+        perturbed_rule, i=n-1, un-1, args=((xi,yi) for i in range(n))
+    ```
 
     Args:
         t: Timestep argument required by scipy.
-        state: A state vector whose first element is density of young
-            trees and second element is density of old trees.
-        params: Parameters for ecosystem dynamics. Parameters should be passed
-            in the same order of appearance in equation (18) read from left
-            to right and then top to bottom.
+        u: A state vector of shape [n * 2]. Element `i` is density of 
+            young trees and element `i+1` is the density of old trees.
+        params: Parameters for ecosystem dynamics. Parameters should be
+            passed exactly in this order.
             - rho: Fertility of tree species.
             - f: Aging rate of young trees.
-            - a_1: Biotic pump weight of young trees.
-            - alpha_i: Penalty weight for high/low water received by forest `i`.
-            - epsilon_i: Perturbation of system bool at timestep t.
-            - theta_i: Models beginning of deforestation of forest `i` at `t`.
+            - a_1: Biotic pump weight of young trees. Must be 0 if you want
+                1 forest model.
             - h: Mortality rate of old trees.
-            - a_2: Biotic pump weight of old trees.
+            - a_2: Biotic pump weight of old trees. Must be 0 if you want 
+                1 forest model.
+            - dists: Distance between `i` and `i+1` ecosystem.
+            - w_0: Threshold for water needed for postive effect on ecosystem.
+            - alpha_0: Initial penalty coefficient.
+            - beta_2: Water evaporation coefficient of old trees.
+            - l: Positive normalization coefficient from size of forested area.
+            - P_0: Average water quantity evaporated over nearby maritime zone.
+                For figure 8, this is 1.05, otherwise it is 1.00.
+            - ecosystem_id_t_star: List of namedtuple's with `ecosystem_id` and
+                `t_star` fields indicating deforestation time of ecosystem. Must
+                be `None` if you don't want to perturb the system.
+            - n_ecosystems: Number of ecosystems.
 
     Returns:
-        Density of young and old species of trees, respectively.
+        A vector where each even index is `x_i` and each odd index is `y_i`
+        for `i in range(n_ecosystems)`.
 
     References:
         Equation (18) in Cantin2020
     """
-    rho, f, a_1, alpha_i, epsilson_i, theta_i, h, a_2 = params 
-    x_i, y_i = state 
-    xdot_i = rho*y_i - gamma(y_i)*x_i - f*x_i + a_1*alpha_i*x_i \
-        - epsilson_i*theta_i*x_i
-    ydot_i = f*x_i - h*y_i + a_2*alpha_i*y_i - epsilson_i*theta_i*y_i
-    return xdot_i, ydot_i
+    # Extract parameters
+    rho,  \
+    f,  \
+    a_1, \
+    h, \
+    a_2, \
+    dists, \
+    w_0, \
+    alpha_0, \
+    beta_2, \
+    l, \
+    P_0, \
+    ecosystem_id_t_star, \
+    n_ecosystems = params 
+
+    assert n_ecosystems > 0, "n_ecosystems must be at least 1"
+    
+    # Remove perturbation and biotic pump terms from dynamical system
+    if n_ecosystems == 1:
+        a_1 = 0
+        a_2 = 0
+        ecosystem_id_t_star = None
+        dists = None
+    else:
+        assert len(dists) == (n_ecosystems - 1), "n-1 dists provided"
+    
+    # iterate through ecosystems and compute new values
+    n_state_vars = 2
+    du = np.empty(shape=(n_ecosystems * n_state_vars,))
+    du_counter = 0
+    for i in range(n_ecosystems):
+        x_i, y_i = u[du_counter], u[du_counter+1]
+        xs_to_i = u[0:(2*i)+1:n_state_vars]
+        ys_to_i = u[1:(2*i)+2:n_state_vars]
+        
+        # determine penalty parameter
+        if dists is not None:
+            alpha_i = alpha(
+                xs_to_i=xs_to_i, 
+                ys_to_i=ys_to_i,
+                d_to_i=dists[:i], # TODO: This could be wrong??
+                i=i,
+                w_0=w_0,
+                alpha_0=alpha_0,
+                beta_2=beta_2,
+                l=l,
+                P_0=P_0)
+        else:
+            alpha_i = 0
+        
+        # Determine deforestation phenomena
+        if ecosystem_id_t_star is None:
+            epsilon_i = 0
+            theta_i = 0
+        else:
+            epsilon_i = epsilon_k(
+                k=i, ecosytem_ids=ecosystem_id_t_star.ecoystem_id)
+            theta_i = theta(t=t, t_star=ecosystem_id_t_star.t_star)
+
+        # Compute change in densities of forest ecosystem i
+        xdot_i = rho*y_i - gamma(y_i)*x_i - f*x_i \
+            + a_1*alpha_i*x_i \
+            - epsilon_i*theta_i*x_i
+        ydot_i = f*x_i - h*y_i + a_2*alpha_i*y_i - epsilon_i*theta_i*y_i
+
+        # Update derivative of state vector
+        du[du_counter] = xdot_i
+        du[du_counter+1] = ydot_i
+        du_counter += n_state_vars
+
+    return du
 
 
 def gamma(y, a = 1, b = 1, c = 1):
-    return a*(y-b)**2 - c
+    """Mortality rate of young trees."""
+    return a*(y-b)**2 + c
 
 
 def alpha(
@@ -90,7 +147,7 @@ def alpha(
     beta_2: float = 1,
     l: float = 600,
     P_0: float = 1):
-    """
+    """Penalty function for ecosystems receiving optimal/suboptimal water.
 
     Args:
         xs_to_i: Densities of young trees up to ecosystem `i`.
@@ -105,7 +162,7 @@ def alpha(
             For figure 8, this is 1.05, otherwise it is 1.00.
 
     Returns:
-        TODO
+        Penalty coefficient.
     
     References:
         Equation (8) and (9) in Cantin2020
@@ -142,14 +199,17 @@ def theta(t: int, t_star: int):
     return deforestation_coefficient 
 
 
-def epsilon_k(k: int, random_distinct_integers_i: Set[int]):
+def epsilon_k(
+        k: int, 
+        ecosytem_ids: Union[Set[int], List[NamedTuple]]):
     """Boolean integer for deforestation effect on forest dynamical system.
 
     Args:
         k: The integer of the `k^th` ecosystem. 
-        random_distinct_integers_i: Integers corresponding to the i^th
+        ecosystem_ids: Integers corresponding to the i^th
             ecosystem that will undergo deforestation. This is 
-            `{i_1, ..., i_N}` in Equation (17) Cantin2020.
+            `{i_1, ..., i_N}` in Equation (17) Cantin2020. This could also
+            just be a list of EcosystemDeforestTime named tuples.
 
     Returns:
         1 if k in the set, 0 otherwise. 
@@ -157,8 +217,10 @@ def epsilon_k(k: int, random_distinct_integers_i: Set[int]):
     References:
         Equation (17) from Cantin2020
     """
-
-    return k in random_distinct_integers_i 
+    if isinstance(ecosytem_ids, list) \
+        and isinstance(ecosytem_ids[0], namedtuple):
+        ecosytem_ids = {ecosystem.ecosystem_id for ecosystem in ecosytem_ids}
+    return k in ecosytem_ids
 
 
 def randomly_perturb_ecosystems(
