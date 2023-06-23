@@ -247,7 +247,7 @@ def randomly_perturb_ecosystems(
         t_timesteps: Number of timesteps over which integration will occur.
             For example, one might compute trajectories of a dynamical system
             over 50 timesteps (e.g., years), so then `t_timesteps = 50`.
-        n_deforested_ecosystems: 
+        n_deforested_ecosystems: Number of ecosystems to deforest.
         n_total_ecosystems: Total number of ecosystems.    
 
     Returns:
