@@ -16,7 +16,10 @@ end
 [1] : Equation (10) from Cantin2020
 """
 function n_forest_rule(u::Matrix, params, t)
-    @unpack ρ, f, a₁, h, a₂, d, l, P₀, β₁, β₂, n = params
+    @unpack ρ, f, a₁, h, a₂, d, l, α₀, P₀, β₁, β₂, n = params
+    @assert n >= 1 "At least 1 forest ecosystem"
+    @assert length(d) == (n-1), "n-1 distances in distance vector `d`"
+
     n_state_vars = 2
     x_ix = 1
     y_ix = 2
@@ -28,8 +31,8 @@ function n_forest_rule(u::Matrix, params, t)
     for i in 1:n 
         xᵢ = u[i, x_ix] 
         yᵢ = u[i, y_ix]
-        wᵢ = w(i, x, y, d, l, P₀, β₁, β₂)
-        αᵢ = α(wᵢ, α₀, w₀)
+        wᵢ = n > 1 ? w(i, x, y, d, l, P₀, β₁, β₂) : 0
+        αᵢ = n > 1 ? α(wᵢ, α₀, w₀) : 0
         du[i, x_ix] = ρ*yᵢ - γ(yᵢ)*xᵢ - f*xᵢ + a₁*αᵢ*xᵢ
         du[i, y_ix] = f*xᵢ - h*yᵢ + a₂*αᵢ*yᵢ
     end 
