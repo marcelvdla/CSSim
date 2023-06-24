@@ -1,5 +1,5 @@
 """
-    w(i, x, y, d, P₀, β₁ = 0, β₂ = 1)
+    w(i, x, y, d, l, P₀, β₁ = 0, β₂ = 1)
 
 [1] : Equation (3), (5), and (6) from Cantin2020
 """
@@ -35,10 +35,10 @@ TODO: α_0, w_0 should be global for the system, could get rid of them somehow i
 α(wᵢ, α₀ = -1, w₀ = 1) = α₀*(1 - wᵢ / w₀)
 
 """
-    gamma(y, a = 1, b = 1, c = 1)
+    γ(y, a = 1, b = 1, c = 1)
 
 Return mortality rate of young trees
 
 [1] : Equation (2) from Cantin2020
 """
-gamma(y, a = 1, b = 1, c = 1) = a*(y - b)^2 + c
+γ(y, a = 1, b = 1, c = 1) = a*(y - b)^2 + c

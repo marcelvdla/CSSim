@@ -1,6 +1,41 @@
 using DynamicalSystems
 using Symbolics
+using UnPack
 include("common.jl")
+
+"""
+    n_forest_system(u0::Matrix, params::Dict{Symbol, Any})
+"""
+function n_forest_system(u0::Matrix, params::Dict{Symbol, Any})
+    return CoupledODEs(n_forest_rule, u0, params)
+end 
+
+"""
+    n_forest_rule(u::Matrix, params::Dict{Symbol, Any}, t)
+
+[1] : Equation (10) from Cantin2020
+"""
+function n_forest_rule(u::Matrix, params, t)
+    @unpack ρ, f, a₁, h, a₂, d, l, P₀, β₁, β₂, n = params
+    n_state_vars = 2
+    x_ix = 1
+    y_ix = 2
+
+    x = u[:, x_ix]
+    y = u[:, y_ix]
+
+    du = zeros(n, n_state_vars)
+    for i in 1:n 
+        xᵢ = u[i, x_ix] 
+        yᵢ = u[i, y_ix]
+        wᵢ = w(i, x, y, d, l, P₀, β₁, β₂)
+        αᵢ = α(wᵢ, α₀, w₀)
+        du[i, x_ix] = ρ*yᵢ - γ(yᵢ)*xᵢ - f*xᵢ + a₁*αᵢ*xᵢ
+        du[i, y_ix] = f*xᵢ - h*yᵢ + a₂*αᵢ*yᵢ
+    end 
+
+    return du
+end 
 
 """
     one_forest_system(u0; ρ, f, h, a = 1, b = 1, c = 1)
