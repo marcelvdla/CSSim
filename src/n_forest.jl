@@ -7,27 +7,26 @@ include("common.jl")
     n_forest_system(u0::Matrix, params::Dict{Symbol, Any})
 """
 function n_forest_system(u0::Matrix, params::Dict{Symbol, Any})
-    return CoupledODEs(n_forest_rule, u0, params)
+    return CoupledODEs(n_forest_rule!, u0, params)
 end 
 
 """
-    n_forest_rule(u::Matrix, params::Dict{Symbol, Any}, t)
+    n_forest_rule!(du, u::Matrix, params::Dict{Symbol, Any}, t)
 
 [1] : Equation (10) from Cantin2020
 """
-function n_forest_rule(u::Matrix, params, t)
-    @unpack ρ, f, a₁, h, a₂, d, l, α₀, P₀, β₁, β₂, n = params
+function n_forest_rule!(du, u::Matrix, params::Dict{Symbol, Any}, t)
+    @unpack ρ, f, a₁, h, a₂, d, l, α₀, w₀, P₀, β₁, β₂, n = params
     @assert n >= 1 "At least 1 forest ecosystem"
-    @assert length(d) == (n-1), "n-1 distances in distance vector `d`"
+    @assert length(d) == (n-1) "n-1 distances in distance vector `d`"
 
-    n_state_vars = 2
+    # n_state_vars = 2
     x_ix = 1
     y_ix = 2
 
     x = u[:, x_ix]
     y = u[:, y_ix]
 
-    du = zeros(n, n_state_vars)
     for i in 1:n 
         xᵢ = u[i, x_ix] 
         yᵢ = u[i, y_ix]
@@ -37,7 +36,7 @@ function n_forest_rule(u::Matrix, params, t)
         du[i, y_ix] = f*xᵢ - h*yᵢ + a₂*αᵢ*yᵢ
     end 
 
-    return du
+    return nothing
 end 
 
 """
