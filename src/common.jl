@@ -80,7 +80,8 @@ function εₖ(k, ecosystems_ids_to_deforest::AbstractVector)
 end 
 
 """
-    random_ecosystems_times_to_deforest(T, N, n, seed = 42)
+    random_ecosystems_times_to_deforest(
+        T, N, n, seed = 42)::Vector{EcosystemDeforestTime}
 
 Return vector of named tuples `(i, tstar)` to deforest ecosystem `i` at time `tstar`.
 
@@ -92,11 +93,24 @@ Return vector of named tuples `(i, tstar)` to deforest ecosystem `i` at time `ts
 
 [1] : Expression (15) from Cantin2020
 """
-function random_ecosystems_times_to_deforest(T, N, n, seed = 42)
+function random_ecosystems_times_to_deforest(
+    T, N, n, seed = 42)::Vector{EcosystemDeforestTime}
     @assert N <= n "Number of ecosystems to deforest is leq total ecosystems"
     rng = MersenneTwister(seed)
     ecosystem_ids_k = sample(rng, 1:n, N, replace=false)
     tstars = sample(rng, 1:T, N, replace=true)
-    tups = [(i=ecosystem_ids_k[i], tstar=tstars[i]) for i in 1:N]
+    tups = [
+            EcosystemDeforestTime(
+                ecosystem_ids_k[i], 
+                tstars[i]) 
+            for i in 1:N
+        ]
     return tups
 end
+
+struct EcosystemDeforestTime 
+    "ecosystem id"
+    i::Int
+    "deforestation time during integration"
+    tstar::Int 
+end 

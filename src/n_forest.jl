@@ -28,7 +28,7 @@ end
 function n_forest_rule!(du, u::Matrix, params::Dict{Symbol, Any}, t)
     @unpack ρ, f, a₁, h, a₂, d, l, 
             α₀, w₀, P₀, β₁, β₂, 
-            ecosystems_to_deforest::Vector{NamedTuple{(:i, :tstar)}},
+            ecosystems_to_deforest,
             n  = params
     @assert n >= 1 "At least 1 forest ecosystem"
     @assert length(d) == (n-1) "n-1 distances in distance vector `d`"
@@ -44,6 +44,7 @@ function n_forest_rule!(du, u::Matrix, params::Dict{Symbol, Any}, t)
     # For all ecosystems, define the linear complex network of dynamical systems
     deforest_N_systems = length(ecosystems_to_deforest)
     ecosystem_ids_to_deforest = getproperty.(ecosystems_to_deforest, :i)
+    tstars = getproperty.(ecosystems_to_deforest, :tstar)
     for i in 1:n 
         xᵢ = u[i, x_ix] 
         yᵢ = u[i, y_ix]
@@ -54,12 +55,12 @@ function n_forest_rule!(du, u::Matrix, params::Dict{Symbol, Any}, t)
 
         # Deforestation
         εᵢ = εₖ(i, ecosystem_ids_to_deforest)
-        tstar = deforest_N_systems > 0 ? ecosystem_to_deforest[
-            findfirst(id -> id == i, ecosystems_to_deforest)].tstar : 0
+        tstar = deforest_N_systems > 0 ? tstars[
+            findfirst(id -> id == i, ecosystems_ids_to_deforest)] : 0
         θ = εᵢ ? θ(t, tstar) : 0
 
         # forest dynamical system for `i^th` ecosystem
-        du[i, x_ix] = ρ*yᵢ - γ(yᵢ)*xᵢ - f*xᵢ + a₁*αᵢ*xᵢ - εₖ*θ*xᵢ
+        du[i, x_ix] = ρ*yᵢ - γ(yᵢ)*xᵢ - f*xᵢ + a₁*αᵢ*xᵢ - εᵢ*θ*xᵢ
         du[i, y_ix] = f*xᵢ - h*yᵢ + a₂*αᵢ*yᵢ - εᵢ*θ*yᵢ
     end 
 
