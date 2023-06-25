@@ -60,7 +60,7 @@ function n_forest_rule!(du, u::Matrix, params::Dict{Symbol, Any}, t)
 
         # forest dynamical system for `i^th` ecosystem
         du[i, x_ix] = ρ*yᵢ - γ(yᵢ)*xᵢ - f*xᵢ + a₁*αᵢ*xᵢ - εₖ*θ*xᵢ
-        du[i, y_ix] = f*xᵢ - h*yᵢ + a₂*αᵢ*yᵢ -εᵢ*θ*yᵢ
+        du[i, y_ix] = f*xᵢ - h*yᵢ + a₂*αᵢ*yᵢ - εᵢ*θ*yᵢ
     end 
 
     return nothing
