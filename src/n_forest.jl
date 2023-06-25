@@ -90,19 +90,19 @@ two sub-population forest ecosystem.
 function antonovsky_rule(u, params, t)
     x, y = u
     ρ, f, h, a, b, c = params
-    xdot = ρ*y - gamma(y, a, b, c)*x - f*x
+    xdot = ρ*y - γ(y, a, b, c)*x - f*x
     ydot = f*x - h*y
     return SVector(xdot, ydot)
 end 
 
 """
-    antonovsky_jacob(u, params::Dict{Symbol, Any}, t)
+    antonovsky_jacob(u, params, t)
 
 Jacobian for the Antonovsky forest ecosystem model.
 """
-function antonovsky_jacob(u, params::Dict{Symbol, Any}, t) 
+function antonovsky_jacob(u, params, t) 
     x, y = u
-    @unpack ρ, f, h, a, b, c = params
+    ρ, f, h, a, b, c = params
     return SMatrix{2,2}(-c - f - a*((y - b)^2), f, ρ - 2a*x*(y - b), -h)
 end
 
