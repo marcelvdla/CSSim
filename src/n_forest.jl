@@ -26,7 +26,10 @@ end
 [1] : Equation (10) from Cantin2020
 """
 function n_forest_rule!(du, u::Matrix, params::Dict{Symbol, Any}, t)
-    @unpack ρ, f, a₁, h, a₂, d, l, α₀, w₀, P₀, β₁, β₂, n = params
+    @unpack ρ, f, a₁, h, a₂, d, l, 
+            α₀, w₀, P₀, β₁, β₂, 
+            ecosystems_to_deforest::Vector{NamedTuple{(:i, :tstar)}},
+            n  = params
     @assert n >= 1 "At least 1 forest ecosystem"
     @assert length(d) == (n-1) "n-1 distances in distance vector `d`"
 
@@ -38,14 +41,26 @@ function n_forest_rule!(du, u::Matrix, params::Dict{Symbol, Any}, t)
     x = u[:, x_ix]
     y = u[:, y_ix]
 
-    # for all ecosystems, define the linear complex network of dynamical systems
+    # For all ecosystems, define the linear complex network of dynamical systems
+    deforest_N_systems = length(ecosystems_to_deforest)
+    ecosystem_ids_to_deforest = getproperty.(ecosystems_to_deforest, :i)
     for i in 1:n 
         xᵢ = u[i, x_ix] 
         yᵢ = u[i, y_ix]
+
+        # Biotic pump 
         wᵢ = n > 1 ? w(i, x, y, d, l, P₀, β₁, β₂) : 0
         αᵢ = n > 1 ? α(wᵢ, α₀, w₀) : 0
-        du[i, x_ix] = ρ*yᵢ - γ(yᵢ)*xᵢ - f*xᵢ + a₁*αᵢ*xᵢ
-        du[i, y_ix] = f*xᵢ - h*yᵢ + a₂*αᵢ*yᵢ
+
+        # Deforestation
+        εᵢ = εₖ(i, ecosystem_ids_to_deforest)
+        tstar = deforest_N_systems > 0 ? ecosystem_to_deforest[
+            findfirst(id -> id == i, ecosystems_to_deforest)].tstar : 0
+        θ = εᵢ ? θ(t, tstar) : 0
+
+        # forest dynamical system for `i^th` ecosystem
+        du[i, x_ix] = ρ*yᵢ - γ(yᵢ)*xᵢ - f*xᵢ + a₁*αᵢ*xᵢ - εₖ*θ*xᵢ
+        du[i, y_ix] = f*xᵢ - h*yᵢ + a₂*αᵢ*yᵢ -εᵢ*θ*yᵢ
     end 
 
     return nothing
