@@ -81,20 +81,21 @@ end
 
 """
     ecosystems_times_to_deforest(
-        T, N, n, seed = 42)::Vector{EcosystemDeforestTime}
+        T::Int, N::Int, n::Int, seed = 42)::Vector{EcosystemDeforestTime}
 
-Return vector of elements `(i, tstar)` to deforest ecosystem `i` at time `tstar`.
+Return vector of elements `(i, tstar)` to randomly deforest ecosystem `i` at 
+time `tstar`.
 
 # Arguments 
-- `T`: Total time system system is evolved (e.g., T = 50 for 50 years)
-- `N`: Number of ecosystems to deforest. 
-- `n`: Total number of ecosystems in the complex network.
+- `T::Int`: Total time system system is evolved (e.g., T = 50 for 50 years)
+- `N::Int`: Number of ecosystems to deforest. 
+- `n::Int`: Total number of ecosystems in the complex network.
 - `seed=42`: Random seed for sampling.
 
 [1] : Expression (15) from Cantin2020
 """
 function ecosystems_times_to_deforest(
-    T, N, n, seed = 42)::Vector{EcosystemDeforestTime}
+    T::Int, N::Int, n::Int, seed = 42)::Vector{EcosystemDeforestTime}
     @assert N <= n "Number of ecosystems to deforest is leq total ecosystems"
     rng = MersenneTwister(seed)
     ecosystem_ids_k = sample(rng, 1:n, N, replace=false)
@@ -105,49 +106,67 @@ function ecosystems_times_to_deforest(
                 tstars[i]) 
             for i in 1:N
         ]
+
     return tups
 end
 
 """
     ecosystems_times_to_deforest(
-        T, deforest_ecosystems::Vector{Int}, n, seed = 42)::Vector{EcosystemDeforestTime}
+        T::Int, 
+        deforest_ecosystems::Union{Vector{Int}, Vector{Any}}, 
+        deforest_times::Union{Vector{Int}, Vector{Any}}, 
+        n::Int, 
+        seed = 42)::Vector{EcosystemDeforestTime}
 
-Return vector of elements `(i, tstar)` for `i in deforest_ecosystems`.
+Return vector of `(i, tstar)` with selected ecosystems/times to deforest.
+
+# Arguments 
+- `T::Int`: Total time system system is evolved (e.g., T = 50 for 50 years)
+- `deforest_ecosystems::Union{Vector{Int}, Vector{Any}}`: Vector of ecosystem 
+    ids to deforest. Pass an empty vector `[]` if you want random ecosystem ids 
+    to be used.
+- `deforest_times::Union{Vector{Int}, Vector{Any}}`: Vector of times to 
+        deforest. Pass an empty vector `[]` if you want random times to be used.
+- `n`: Total number of ecosystems in the complex network.
+- `seed=42`: Random seed for sampling.
 """
 function ecosystems_times_to_deforest(
-    T, deforest_ecosystems::Vector{Int}, n, seed = 42)
-    @assert length(deforest_ecosystems) <= n  "Number of ecosystems to deforest"
-        " is leq total ecosystems"
-    rng = MersenneTwister(seed)
-    tstars = sample(rng, 1:T, N, replace=true)
-    tups = [
-        EcosystemDeforestTime(
-            deforest_ecosystems[i], 
-            tstars[i]) 
-        for i in 1:N
-    ]
-    return tups
-end 
+    T::Int, 
+    deforest_ecosystems::Union{Vector{Int}, Vector{Any}}, 
+    deforest_times::Union{Vector{Int}, Vector{Any}}, 
+    n::Int, 
+    seed = 42)
+    # Compute length of args
+    len_deforest_ecosystems = length(deforest_ecosystems)
+    len_deforest_times = length(deforest_times)
+    
+    # Validate args
+    at_least_one_vector = len_deforest_ecosystems > 0 || len_deforest_times > 0
+    @assert at_least_one_vector "Length of one of `deforest_ecosystems`" 
+        " or `deforest_times` is at least 1"
 
-"""
-    ecosystems_times_to_deforest(
-        T, deforest_times::Vector{Int}, n, seed = 42)::Vector{EcosystemDeforestTime}
+    @assert len_deforest_ecosystems <= n && len_deforest_times <= n "Number of" 
+        " ecosystems to deforest is leq total ecosystems:"
+        " $(len_deforest_ecosystems), $(len_deforest_times)"
 
-Return vector of elements `(i, tstar)` for `tstar in deforest_times`.
-"""
-function ecosystems_times_to_deforest(
-    T, deforest_times::Vector{Int}, n, seed = 42)
-    @assert length(deforest_times) <= n "Number of ecosystems to deforest" 
-        " leq total ecosystems"
-    @assert all(deforest_times < T) "Deforest time less than total time `T`"
+    # Generate random samples as needed
+    N = max(len_deforest_ecosystems, len_deforest_times)
     rng = MersenneTwister(seed)
-    ecosystem_ids_k = sample(rng, 1:n, N, replace=false)
+    ecosystem_ids_k = len_deforest_ecosystems > 0 ? deforest_ecosystems :
+        sample(rng, 1:n, N, replace=false)
+    tstars = len_deforest_times > 0 ? deforest_times : 
+        sample(rng, 1:T, N, replace=true)
+
+    @assert length(ecosystem_ids_k) == length(tstars) "Valid deforestation pairs"
+
+    # get deforestation vector
     tups = [
         EcosystemDeforestTime(
             ecosystem_ids_k[i], 
-            deforest_times[i]) 
+            tstars[i]) 
         for i in 1:N
     ]
+
     return tups
 end 
 

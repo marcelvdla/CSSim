@@ -42,7 +42,6 @@ function n_forest_rule!(du, u::Matrix, params::Dict{Symbol, Any}, t)
     y = u[:, y_ix]
 
     # For all ecosystems, define the linear complex network of dynamical systems
-    deforest_N_systems = length(ecosystems_to_deforest)
     ecosystem_ids_to_deforest = getproperty.(ecosystems_to_deforest, :i)
     tstars = getproperty.(ecosystems_to_deforest, :tstar)
     for i in 1:n 
@@ -55,13 +54,13 @@ function n_forest_rule!(du, u::Matrix, params::Dict{Symbol, Any}, t)
 
         # Deforestation
         εᵢ = εₖ(i, ecosystem_ids_to_deforest)
-        tstar = deforest_N_systems > 0 ? tstars[
-            findfirst(id -> id == i, ecosystems_ids_to_deforest)] : 0
-        θ = εᵢ ? θ(t, tstar) : 0
+        tstar = εᵢ ? tstars[
+            findfirst(id -> id == i, ecosystem_ids_to_deforest)] : 0
+        θᵢ = εᵢ ? θ(t, tstar) : 0
 
         # forest dynamical system for `i^th` ecosystem
-        du[i, x_ix] = ρ*yᵢ - γ(yᵢ)*xᵢ - f*xᵢ + a₁*αᵢ*xᵢ - εᵢ*θ*xᵢ
-        du[i, y_ix] = f*xᵢ - h*yᵢ + a₂*αᵢ*yᵢ - εᵢ*θ*yᵢ
+        du[i, x_ix] = ρ*yᵢ - γ(yᵢ)*xᵢ - f*xᵢ + a₁*αᵢ*xᵢ - εᵢ*θᵢ*xᵢ
+        du[i, y_ix] = f*xᵢ - h*yᵢ + a₂*αᵢ*yᵢ - εᵢ*θᵢ*yᵢ
     end 
 
     return nothing
