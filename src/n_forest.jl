@@ -8,6 +8,16 @@ include("common.jl")
 """
 function n_forest_system(u0::Matrix, params::Dict{Symbol, Any})
     return CoupledODEs(n_forest_rule!, u0, params)
+end
+
+"""
+    n_forest_system(u0::Matrix, params::Dict{Symbol, Any}, diffeq::NamedTuple)
+
+`n_forest_system` with parameter `diffeq` for solver arguments.
+"""
+function n_forest_system(
+    u0::Matrix, params::Dict{Symbol, Any}, diffeq::NamedTuple)
+    return CoupledODEs(n_forest_rule!, u0, params; diffeq=diffeq)
 end 
 
 """
@@ -20,13 +30,15 @@ function n_forest_rule!(du, u::Matrix, params::Dict{Symbol, Any}, t)
     @assert n >= 1 "At least 1 forest ecosystem"
     @assert length(d) == (n-1) "n-1 distances in distance vector `d`"
 
-    # n_state_vars = 2
+    # two state variable indices
     x_ix = 1
     y_ix = 2
 
+    # x and y for all ecosystems
     x = u[:, x_ix]
     y = u[:, y_ix]
 
+    # for all ecosystems, define the linear complex network of dynamical systems
     for i in 1:n 
         xᵢ = u[i, x_ix] 
         yᵢ = u[i, y_ix]
@@ -69,13 +81,13 @@ function antonovsky_rule(u, params, t)
 end 
 
 """
-    antonovsky_jacob(u, params, t)
+    antonovsky_jacob(u, params::Dict{Symbol, Any}, t)
 
 Jacobian for the Antonovsky forest ecosystem model.
 """
-function antonovsky_jacob(u, params, t) 
+function antonovsky_jacob(u, params::Dict{Symbol, Any}, t) 
     x, y = u
-    ρ, f, h, a, b, c = params
+    @unpack ρ, f, h, a, b, c = params
     return SMatrix{2,2}(-c - f - a*((y - b)^2), f, ρ - 2a*x*(y - b), -h)
 end
 
