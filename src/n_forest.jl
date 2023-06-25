@@ -67,6 +67,32 @@ function n_forest_rule!(du, u::Matrix, params::Dict{Symbol, Any}, t)
 end 
 
 """
+    n_forest_sym_rule(n::Int)
+
+Symbolic rule for `n`-forest complex network without perturbations.
+"""
+function n_forest_sym_rule(n::Int)
+    # state variables  
+    @variables x[1:n] y[1:n]
+
+    # penalty variables 
+    @variables α[1:n]
+
+    # time derivatives 
+    @variables ẋ[1:n] ẏ[1:n]
+
+    # parameters 
+    @variables ρ f h a₁ a₂ a b c 
+
+    for i in 1:n 
+        ẋ[i] = ρ*y[i] - (a*(y[i]-b)^2)*x[i] - f*x[i] + a₁*α[i]*x[i]
+        ẏ[i] = f*x[i] - h*y[i] + a₂*α[i]*y[i]
+    end 
+
+    return ([ẋ, ẏ], [x, y])
+end 
+
+"""
     one_forest_system(u0; ρ, f, h, a = 1, b = 1, c = 1)
 
 Coupled ODE system for modeling the dynamics of a single forest ecosystem's

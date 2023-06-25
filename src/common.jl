@@ -35,6 +35,8 @@ B(xᵢ, yᵢ, β₁ = 0, β₂ = 1) = β₁*xᵢ + β₂*yᵢ
 
 Return penalty value for ecosystems receiving optimal/suboptimal water.
 
+`α` can be typed by `\\alpha<tab>`
+
 [1] : Equation (8) from Cantin2020
 """
 α(wᵢ, α₀ = -1, w₀ = 1) = α₀*(1 - wᵢ / w₀)
@@ -44,6 +46,8 @@ Return penalty value for ecosystems receiving optimal/suboptimal water.
 
 Return mortality rate of young trees.
 
+`γ` can be typed by `\\gamma<tab>`
+
 [1] : Equation (2) from Cantin2020
 """
 γ(y, a = 1, b = 1, c = 1) = a*(y - b)^2 + c
@@ -52,6 +56,8 @@ Return mortality rate of young trees.
     θ(t, tstar)
 
 Return deforestation coefficient.
+
+`θ` can be typed by `\\theta<tab>`
 
 [1] : Equation (16) from Cantin2020
 """
