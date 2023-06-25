@@ -2,7 +2,7 @@
 
 julia_version = "1.9.0"
 manifest_format = "2.0"
-project_hash = "fd2d8daee2782086ee88d2e1702f3f6c7e868dfe"
+project_hash = "53ba02908236bc0110ee0b8f06e0c1c1507d793f"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "dcfdf328328f2645531c4ddebf841228aef74130"
@@ -2199,6 +2199,12 @@ deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Op
 git-tree-sha1 = "04777432d74ec5bc91ca047c9e0e0fd7f81acdb6"
 uuid = "fb77eaff-e24c-56d4-86b1-d163f2edb164"
 version = "5.2.1+0"
+
+[[deps.Suppressor]]
+deps = ["Logging"]
+git-tree-sha1 = "9a428c8eb6cca9a9566ab619b176e83d441064ba"
+uuid = "fd094767-a336-5f1f-9728-57cf17d0bbfb"
+version = "0.2.3"
 
 [[deps.SymbolicIndexingInterface]]
 deps = ["DocStringExtensions"]
