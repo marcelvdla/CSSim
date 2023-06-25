@@ -1,5 +1,10 @@
+using StatsBase
+using Random
+
 """
     w(i, x, y, d, l, P₀, β₁ = 0, β₂ = 1)
+
+Return water quantity received by ecosystem `i` from all other ecosystems.
 
 [1] : Equation (3), (5), and (6) from Cantin2020
 """
@@ -19,6 +24,8 @@ end
 """
     B(xᵢ, yᵢ, β₁ = 0, β₂ = 1)
 
+Return quantity of water evaporated of `i^th` forest.
+
 [1] : Equation (7) from Cantin2020
 """
 B(xᵢ, yᵢ, β₁ = 0, β₂ = 1) = β₁*xᵢ + β₂*yᵢ
@@ -26,9 +33,7 @@ B(xᵢ, yᵢ, β₁ = 0, β₂ = 1) = β₁*xᵢ + β₂*yᵢ
 """
     α(wᵢ, α₀, w₀)
 
-Return penalty value α_i(w), using α_0, w_0
-
-TODO: α_0, w_0 should be global for the system, could get rid of them somehow in the function call?
+Return penalty value for ecosystems receiving optimal/suboptimal water.
 
 [1] : Equation (8) from Cantin2020
 """
@@ -37,8 +42,61 @@ TODO: α_0, w_0 should be global for the system, could get rid of them somehow i
 """
     γ(y, a = 1, b = 1, c = 1)
 
-Return mortality rate of young trees
+Return mortality rate of young trees.
 
 [1] : Equation (2) from Cantin2020
 """
 γ(y, a = 1, b = 1, c = 1) = a*(y - b)^2 + c
+
+""" 
+    θ(t, tstar)
+
+Return deforestation coefficient.
+
+[1] : Equation (16) from Cantin2020
+"""
+function θ(t, tstar)
+    A = 2
+    if t <= tstar
+        return 0
+    elseif tstar < t < tstar + 1
+        return (A/2) - (A/2)cos(π*(t-tstar))
+    else
+        return A 
+    end
+end 
+
+"""
+    εₖ(k, ecosystems_ids_to_deforest::AbstractVector)
+
+Return deforestation bool from ecosystem id `k` in `ecosystems_ids_to_deforest`.
+
+`εₖ` can be typed by `\\varepsilon<tab>\\_k<tab>`
+
+[1] : Equation (17) from Cantin2020
+"""
+function εₖ(k, ecosystems_ids_to_deforest::AbstractVector)
+    return k in collect(ecosystems_ids_to_deforest)
+end 
+
+"""
+    random_ecosystems_times_to_deforest(T, N, n, seed = 42)
+
+Return vector of named tuples `(i, tstar)` to deforest ecosystem `i` at time `tstar`.
+
+# Arguments 
+- `T`: Total time system system is evolved (e.g., T = 50 for 50 years)
+- `N`: Number of ecosystems to deforest. 
+- `n`: Total number of ecosystems in the complex network.
+- `seed=42`: Random seed for sampling.
+
+[1] : Expression (15) from Cantin2020
+"""
+function random_ecosystems_times_to_deforest(T, N, n, seed = 42)
+    @assert N <= n "Number of ecosystems to deforest is leq total ecosystems"
+    rng = MersenneTwister(seed)
+    ecosystem_ids_k = sample(rng, 1:n, N, replace=false)
+    tstars = sample(rng, 1:T, N, replace=true)
+    tups = [(i=ecosystem_ids_k[i], tstar=tstars[i]) for i in 1:N]
+    return tups
+end
