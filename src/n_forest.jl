@@ -69,7 +69,7 @@ end
 """
     n_forest_sym_rule(n::Int)
 
-Symbolic rule for `n`-forest complex network without perturbations.
+Return symbolic repr for `n`-forest complex network without perturbations.
 """
 function n_forest_sym_rule(n::Int)
     # state variables  
@@ -79,17 +79,34 @@ function n_forest_sym_rule(n::Int)
     @variables α[1:n]
 
     # time derivatives 
-    @variables ẋ[1:n] ẏ[1:n]
+    dx = Matrix{Num}(undef, n, 2)
 
     # parameters 
     @variables ρ f h a₁ a₂ a b c 
 
+    x_ix = 1
+    y_ix = 2
     for i in 1:n 
-        ẋ[i] = ρ*y[i] - (a*(y[i]-b)^2)*x[i] - f*x[i] + a₁*α[i]*x[i]
-        ẏ[i] = f*x[i] - h*y[i] + a₂*α[i]*y[i]
+        γ = a*(y[i] - b)^2 + c
+        dx[i, x_ix] = ρ*y[i] - γ*x[i] - f*x[i] + a₁*α[i]*x[i]
+        dx[i, y_ix] = f*x[i] - h*y[i] + a₂*α[i]*y[i]
     end 
 
-    return ([ẋ, ẏ], [x, y])
+    # reshape to an [x1 y1, ..., xi yi] dx and a [x1, y1, ..., xi, yi] x
+    return (reshape(permutedims(dx), :), 
+            reshape(permutedims(reshape([x; y], n, 2)), :))
+end 
+
+"""
+    n_forest_sym_jacob(n::Int)
+
+Return symbolic jacobian for `n`-forest complex network without perturbations.
+
+Symbolic jacobian will be of shape `2*n × 2*n`.
+"""
+function n_forest_sym_jacob(n::Int)
+    dx, x = n_forest_sym_rule(n)
+    return Symbolics.jacobian(dx, x)
 end 
 
 """
