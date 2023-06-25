@@ -80,10 +80,10 @@ function εₖ(k, ecosystems_ids_to_deforest::AbstractVector)
 end 
 
 """
-    random_ecosystems_times_to_deforest(
+    ecosystems_times_to_deforest(
         T, N, n, seed = 42)::Vector{EcosystemDeforestTime}
 
-Return vector of named tuples `(i, tstar)` to deforest ecosystem `i` at time `tstar`.
+Return vector of elements `(i, tstar)` to deforest ecosystem `i` at time `tstar`.
 
 # Arguments 
 - `T`: Total time system system is evolved (e.g., T = 50 for 50 years)
@@ -93,7 +93,7 @@ Return vector of named tuples `(i, tstar)` to deforest ecosystem `i` at time `ts
 
 [1] : Expression (15) from Cantin2020
 """
-function random_ecosystems_times_to_deforest(
+function ecosystems_times_to_deforest(
     T, N, n, seed = 42)::Vector{EcosystemDeforestTime}
     @assert N <= n "Number of ecosystems to deforest is leq total ecosystems"
     rng = MersenneTwister(seed)
@@ -107,6 +107,49 @@ function random_ecosystems_times_to_deforest(
         ]
     return tups
 end
+
+"""
+    ecosystems_times_to_deforest(
+        T, deforest_ecosystems::Vector{Int}, n, seed = 42)::Vector{EcosystemDeforestTime}
+
+Return vector of elements `(i, tstar)` for `i in deforest_ecosystems`.
+"""
+function ecosystems_times_to_deforest(
+    T, deforest_ecosystems::Vector{Int}, n, seed = 42)
+    @assert length(deforest_ecosystems) <= n  "Number of ecosystems to deforest"
+        " is leq total ecosystems"
+    rng = MersenneTwister(seed)
+    tstars = sample(rng, 1:T, N, replace=true)
+    tups = [
+        EcosystemDeforestTime(
+            deforest_ecosystems[i], 
+            tstars[i]) 
+        for i in 1:N
+    ]
+    return tups
+end 
+
+"""
+    ecosystems_times_to_deforest(
+        T, deforest_times::Vector{Int}, n, seed = 42)::Vector{EcosystemDeforestTime}
+
+Return vector of elements `(i, tstar)` for `tstar in deforest_times`.
+"""
+function ecosystems_times_to_deforest(
+    T, deforest_times::Vector{Int}, n, seed = 42)
+    @assert length(deforest_times) <= n "Number of ecosystems to deforest" 
+        " leq total ecosystems"
+    @assert all(deforest_times < T) "Deforest time less than total time `T`"
+    rng = MersenneTwister(seed)
+    ecosystem_ids_k = sample(rng, 1:n, N, replace=false)
+    tups = [
+        EcosystemDeforestTime(
+            ecosystem_ids_k[i], 
+            deforest_times[i]) 
+        for i in 1:N
+    ]
+    return tups
+end 
 
 struct EcosystemDeforestTime 
     "ecosystem id"
