@@ -26,6 +26,12 @@ end
 [1] : Equation (10) from Cantin2020
 """
 function n_forest_rule!(du, u::Matrix, params::Dict{Symbol, Any}, t)
+    # distance between `i` and `i+1` forest vector
+    d::Union{Vector{Any}, Vector{Int}} = []
+
+    ecosystems_to_deforest::Union{
+        Vector{Any}, Vector{EcosystemDeforestTime}} = []
+
     @unpack ρ, f, a₁, h, a₂, d, l, 
             α₀, w₀, P₀, β₁, β₂, 
             ecosystems_to_deforest,
@@ -121,13 +127,53 @@ Create Jacobian `J` of an `n`-forest system in place using the state matrix `u`.
 
 The state matrix `u` is `(n, 2)`. The rule for the Jacobian was determined 
 by visual inspection of the outputs of [`n_forest_sym_jacob`](@ref).
+
+# Examples 
+```jldoctest
+julia> # Test jacobian for one forest system
+julia> n = 1;
+julia> params = Dict(
+    :ρ => 1, :f => 1, :a₁ => 1, :h => 1, :a₂ => 1, 
+    :d => [], :l => 1, :α₀ => 1, :w₀ => 1, :P₀ => 1, 
+    :β₁ => 1, :β₂ => 1, :ecosystems_to_deforest => [], 
+    :n => n);
+julia> J = zeros(n*2, n*2);
+julia> u = ones(n, 2);
+julia> n_forest_jacob!(J, u, params, 1);
+julia> J
+2×2 Matrix{Float64}:
+ -2.0   1.0
+  1.0  -1.0
+julia> # Test jacobian for two forest system
+julia> n = 2
+julia> params[:n] = n
+julia> params[:d] = [1]
+julia> J = zeros(n*2, n*2);
+julia> u = ones(n, 2);
+julia> n_forest_jacob!(J, u, params, 1);
+julia> J
+4×4 Matrix{Float64}:
+ -2.0   1.0   0.0       0.0
+  1.0  -1.0   0.0       0.0
+  0.0   0.0  -1.73576   1.0
+  0.0   0.0   1.0      -0.735759
+```
 """
 function n_forest_jacob!(J, u::Matrix, params::Dict{Symbol, Any}, t)
+    # distance between `i` and `i+1` forest vector
+    d::Union{Vector{Any}, Vector{Int}} = []
+    
+    ecosystems_to_deforest::Union{
+        Vector{Any}, Vector{EcosystemDeforestTime}} = []
+
     @unpack ρ, f, a₁, h, a₂, d, l, 
             α₀, w₀, P₀, β₁, β₂, 
             ecosystems_to_deforest,
             n  = params
-    
+    @assert n >= 1 "At least 1 forest ecosystem"
+    @assert length(d) == (n-1) "n-1 distances in distance vector `d`"
+        
+    a = b = c = 1
     J[:, :] .= 0
     
     # two state variable indices
@@ -139,11 +185,11 @@ function n_forest_jacob!(J, u::Matrix, params::Dict{Symbol, Any}, t)
     y = u[:, y_ix]
     
     # define the jacobian inplace using the rule determined 
-    ecosystem_id = 0
+    ecosystem_id = 1
     for i in 1:2:2*n
         xᵢ = x[ecosystem_id]
         yᵢ = y[ecosystem_id]
-        wᵢ = w(ecosystem_id, xᵢ, yᵢ, d, l, P₀, β₁, β₂)
+        wᵢ = w(ecosystem_id, x, y, d, l, P₀, β₁, β₂)
         αᵢ = α(wᵢ, α₀, w₀)
         
         J[i, i] = -c - f + a₁*αᵢ - a*(-b + yᵢ)^2
