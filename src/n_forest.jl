@@ -58,10 +58,12 @@ function n_forest_rule!(du, u::Matrix, params::Dict{Symbol, Any}, t)
         wᵢ = n > 1 ? w(i, x, y, d, l, P₀, β₁, β₂) : 0
         αᵢ = n > 1 ? α(wᵢ, α₀, w₀) : 0
 
-        # Deforestation
+        # Possible deforestation of ecosystem i by finding the index of the first 
+        # deforested ecosystem id that matches the current ecosystem id 
+        # and then indexing the parallel `tstars` list
         εᵢ = εₖ(i, ecosystem_ids_to_deforest)
-        tstar = εᵢ ? tstars[
-            findfirst(id -> id == i, ecosystem_ids_to_deforest)] : 0
+        tstar_ix = findfirst(id -> id == i, ecosystem_ids_to_deforest)
+        tstar = εᵢ ? tstars[tstar_ix] : 0
         θᵢ = εᵢ ? θ(t, tstar) : 0
 
         # forest dynamical system for `i^th` ecosystem
