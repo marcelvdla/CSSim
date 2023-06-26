@@ -69,7 +69,11 @@ end
 """
     n_forest_sym_rule(n::Int)
 
-Return symbolic repr for `n`-forest complex network without perturbations.
+Return symbolic repr. for `n`-forest complex network without perturbations.
+
+[1] : Inspiration from the implementation of the Jacobian for the Lorenz96
+    system based on "Ordinal pattern-based complexity analysis of 
+    high-dimensional chaotic time series" (https://doi.org/10.1063/5.0147219).
 """
 function n_forest_sym_rule(n::Int)
     # state variables  
@@ -102,12 +106,55 @@ end
 
 Return symbolic jacobian for `n`-forest complex network without perturbations.
 
-Symbolic jacobian will be of shape `2*n × 2*n`.
+Symbolic jacobian will be of shape `2*n × 2*n`. See also 
+[`n_forest_sym_rule`](@ref).
 """
 function n_forest_sym_jacob(n::Int)
     dx, x = n_forest_sym_rule(n)
     return Symbolics.jacobian(dx, x)
 end 
+
+"""
+    n_forest_jacob!(J, u::Matrix, params::Dict{Symbol, Any}, t)
+
+Create Jacobian `J` of an `n`-forest system in place using the state matrix `u`.
+
+The state matrix `u` is `(n, 2)`. The rule for the Jacobian was determined 
+by visual inspection of the outputs of [`n_forest_sym_jacob`](@ref).
+"""
+function n_forest_jacob!(J, u::Matrix, params::Dict{Symbol, Any}, t)
+    @unpack ρ, f, a₁, h, a₂, d, l, 
+            α₀, w₀, P₀, β₁, β₂, 
+            ecosystems_to_deforest,
+            n  = params
+    
+    J[:, :] .= 0
+    
+    # two state variable indices
+    x_ix = 1
+    y_ix = 2
+
+    # x and y for all ecosystems
+    x = u[:, x_ix]
+    y = u[:, y_ix]
+    
+    # define the jacobian inplace using the rule determined 
+    ecosystem_id = 0
+    for i in 1:2:2*n
+        xᵢ = x[ecosystem_id]
+        yᵢ = y[ecosystem_id]
+        wᵢ = w(ecosystem_id, xᵢ, yᵢ, d, l, P₀, β₁, β₂)
+        αᵢ = α(wᵢ, α₀, w₀)
+        
+        J[i, i] = -c - f + a₁*αᵢ - a*(-b + yᵢ)^2
+        J[i, i+1] = ρ - 2*a*(-b + yᵢ)*xᵢ
+        J[i+1, i] = f
+        J[i+1, i+1] = -h + a₂*αᵢ
+        ecosystem_id += 1
+    end 
+    
+    return nothing
+end
 
 """
     one_forest_system(u0; ρ, f, h, a = 1, b = 1, c = 1)
