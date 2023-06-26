@@ -26,6 +26,12 @@ end
 [1] : Equation (10) from Cantin2020
 """
 function n_forest_rule!(du, u::Matrix, params::Dict{Symbol, Any}, t)
+    # distance between `i` and `i+1` forest vector
+    d::Union{Vector{Any}, Vector{Int}} = []
+
+    ecosystems_to_deforest::Union{
+        Vector{Any}, Vector{EcosystemDeforestTime}} = []
+
     @unpack ρ, f, a₁, h, a₂, d, l, 
             α₀, w₀, P₀, β₁, β₂, 
             ecosystems_to_deforest,
@@ -52,10 +58,12 @@ function n_forest_rule!(du, u::Matrix, params::Dict{Symbol, Any}, t)
         wᵢ = n > 1 ? w(i, x, y, d, l, P₀, β₁, β₂) : 0
         αᵢ = n > 1 ? α(wᵢ, α₀, w₀) : 0
 
-        # Deforestation
+        # Possible deforestation of ecosystem i by finding the index of the first 
+        # deforested ecosystem id that matches the current ecosystem id 
+        # and then indexing the parallel `tstars` list
         εᵢ = εₖ(i, ecosystem_ids_to_deforest)
-        tstar = εᵢ ? tstars[
-            findfirst(id -> id == i, ecosystem_ids_to_deforest)] : 0
+        tstar_ix = findfirst(id -> id == i, ecosystem_ids_to_deforest)
+        tstar = εᵢ ? tstars[tstar_ix] : 0
         θᵢ = εᵢ ? θ(t, tstar) : 0
 
         # forest dynamical system for `i^th` ecosystem
@@ -69,7 +77,11 @@ end
 """
     n_forest_sym_rule(n::Int)
 
-Return symbolic repr for `n`-forest complex network without perturbations.
+Return symbolic repr. for `n`-forest complex network without perturbations.
+
+[1] : Inspiration from the implementation of the Jacobian for the Lorenz96
+    system based on "Ordinal pattern-based complexity analysis of 
+    high-dimensional chaotic time series" (https://doi.org/10.1063/5.0147219).
 """
 function n_forest_sym_rule(n::Int)
     # state variables  
@@ -102,12 +114,95 @@ end
 
 Return symbolic jacobian for `n`-forest complex network without perturbations.
 
-Symbolic jacobian will be of shape `2*n × 2*n`.
+Symbolic jacobian will be of shape `2*n × 2*n`. See also 
+[`n_forest_sym_rule`](@ref).
 """
 function n_forest_sym_jacob(n::Int)
     dx, x = n_forest_sym_rule(n)
     return Symbolics.jacobian(dx, x)
 end 
+
+"""
+    n_forest_jacob!(J, u::Matrix, params::Dict{Symbol, Any}, t)
+
+Create Jacobian `J` of an `n`-forest system in place using the state matrix `u`.
+
+The state matrix `u` is `(n, 2)`. The rule for the Jacobian was determined 
+by visual inspection of the outputs of [`n_forest_sym_jacob`](@ref).
+
+# Examples 
+```jldoctest
+julia> # Test jacobian for one forest system
+julia> n = 1;
+julia> params = Dict(
+    :ρ => 1, :f => 1, :a₁ => 1, :h => 1, :a₂ => 1, 
+    :d => [], :l => 1, :α₀ => 1, :w₀ => 1, :P₀ => 1, 
+    :β₁ => 1, :β₂ => 1, :ecosystems_to_deforest => [], 
+    :n => n);
+julia> J = zeros(n*2, n*2);
+julia> u = ones(n, 2);
+julia> n_forest_jacob!(J, u, params, 1);
+julia> J
+2×2 Matrix{Float64}:
+ -2.0   1.0
+  1.0  -1.0
+julia> # Test jacobian for two forest system
+julia> n = 2
+julia> params[:n] = n
+julia> params[:d] = [1]
+julia> J = zeros(n*2, n*2);
+julia> u = ones(n, 2);
+julia> n_forest_jacob!(J, u, params, 1);
+julia> J
+4×4 Matrix{Float64}:
+ -2.0   1.0   0.0       0.0
+  1.0  -1.0   0.0       0.0
+  0.0   0.0  -1.73576   1.0
+  0.0   0.0   1.0      -0.735759
+```
+"""
+function n_forest_jacob!(J, u::Matrix, params::Dict{Symbol, Any}, t)
+    # distance between `i` and `i+1` forest vector
+    d::Union{Vector{Any}, Vector{Int}} = []
+    
+    ecosystems_to_deforest::Union{
+        Vector{Any}, Vector{EcosystemDeforestTime}} = []
+
+    @unpack ρ, f, a₁, h, a₂, d, l, 
+            α₀, w₀, P₀, β₁, β₂, 
+            ecosystems_to_deforest,
+            n  = params
+    @assert n >= 1 "At least 1 forest ecosystem"
+    @assert length(d) == (n-1) "n-1 distances in distance vector `d`"
+        
+    a = b = c = 1
+    J[:, :] .= 0
+    
+    # two state variable indices
+    x_ix = 1
+    y_ix = 2
+
+    # x and y for all ecosystems
+    x = u[:, x_ix]
+    y = u[:, y_ix]
+    
+    # define the jacobian inplace using the rule determined 
+    ecosystem_id = 1
+    for i in 1:2:2*n
+        xᵢ = x[ecosystem_id]
+        yᵢ = y[ecosystem_id]
+        wᵢ = w(ecosystem_id, x, y, d, l, P₀, β₁, β₂)
+        αᵢ = α(wᵢ, α₀, w₀)
+        
+        J[i, i] = -c - f + a₁*αᵢ - a*(-b + yᵢ)^2
+        J[i, i+1] = ρ - 2*a*(-b + yᵢ)*xᵢ
+        J[i+1, i] = f
+        J[i+1, i+1] = -h + a₂*αᵢ
+        ecosystem_id += 1
+    end 
+    
+    return nothing
+end
 
 """
     one_forest_system(u0; ρ, f, h, a = 1, b = 1, c = 1)
