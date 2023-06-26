@@ -44,7 +44,7 @@ def deriv_forest(x, y, penalty_rate, args):
     return dx, dy
 
 
-def system_n_forests(x0s, y0s, args, timesteps = 100, dt = 0.01, dist=42, beta_2=1):
+def system_n_forests(x0s, y0s, args, timesteps = 100, dt = 0.01):
     """Solve the system of ODEs of the Antonovosky rule using forward euler.
 
     Args:
@@ -62,8 +62,8 @@ def system_n_forests(x0s, y0s, args, timesteps = 100, dt = 0.01, dist=42, beta_2
 
     assert (isinstance(args, (tuple, list, np.ndarray))),(
             "Your args variable should be a list-like.")
-    assert (len(args)== 9), ("Make sure you have all arguments needed included:"
-                             " fertility, mortality_young, aging_rate,"
+    assert (len(args)== 8), ("Make sure you have all arguments needed included:"
+                             " fertility, aging_rate,"
                              "biotic_pump_young,"
                              "mortality_old, biotic_pump_old, dist, beta_2, P_0.")
     assert len(x0s) == len(y0s), ("The input vector for the young and old trees"
@@ -80,8 +80,8 @@ def system_n_forests(x0s, y0s, args, timesteps = 100, dt = 0.01, dist=42, beta_2
     #         n_total_ecosystems=n,)
 
     for t in range(int(timesteps / dt)):
-        penalties = alpha(x0s, y0s, dist=args[6]/(n-1), beta_2 = args[7],
-                          P_0 = args[8])
+        penalties = alpha(x0s, y0s, dist=args[5]/(n-1), beta_2 = args[6],
+                          P_0 = args[7])
         for i in range(n):
 
             x_vals[i, t] = x0s[i]
