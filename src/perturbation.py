@@ -32,7 +32,7 @@ def perturbation_rule(t, u, params: List):
 
     Args:
         t: Timestep argument required by scipy.
-        u: A state vector of shape [n * 2]. Element `i` is density of 
+        u: A state vector of shape [n * 2]. Element `i` is density of
             young trees and element `i+1` is the density of old trees.
         params: Parameters for ecosystem dynamics. Parameters should be
             passed exactly in this order.
@@ -41,7 +41,7 @@ def perturbation_rule(t, u, params: List):
             - a_1: Biotic pump weight of young trees. Must be 0 if you want
                 1 forest model.
             - h: Mortality rate of old trees.
-            - a_2: Biotic pump weight of old trees. Must be 0 if you want 
+            - a_2: Biotic pump weight of old trees. Must be 0 if you want
                 1 forest model.
             - dists: Distance between `i` and `i+1` ecosystem. Pass None if
                 this is a single forest system.
@@ -78,10 +78,10 @@ def perturbation_rule(t, u, params: List):
     l, \
     P_0, \
     ecosystem_id_t_star, \
-    n_ecosystems = params 
+    n_ecosystems = params
 
     assert n_ecosystems > 0, "n_ecosystems must be at least 1"
-    
+
     # Remove perturbation and biotic pump terms from dynamical system
     if n_ecosystems == 1:
         a_1 = 0
@@ -90,7 +90,7 @@ def perturbation_rule(t, u, params: List):
         dists = None
     else:
         assert len(dists) == (n_ecosystems - 1), "n-1 dists provided"
-    
+
     # iterate through ecosystems and compute new values
     n_state_vars = 2
     du = np.empty(shape=(n_ecosystems, n_state_vars))
@@ -105,14 +105,14 @@ def perturbation_rule(t, u, params: List):
         # so x1, x2 and y1, y2 are needed
         xs_to_i = u[:i, 0]
         ys_to_i = u[:i, 1]
-        
+
         # determine penalty parameter
         # if dists is None then you have a single forest system,
         # therefore, to convert the system of equations to a single
         # forest system, sets alpha_i = 0
         if dists is not None:
             alpha_i = alpha(
-                xs_to_i=xs_to_i, 
+                xs_to_i=xs_to_i,
                 ys_to_i=ys_to_i,
                 d_to_i=dists[:i],
                 i=i,
@@ -123,7 +123,7 @@ def perturbation_rule(t, u, params: List):
                 P_0=P_0)
         else:
             alpha_i = 0
-        
+
         # Determine deforestation phenomena
         if ecosystem_id_t_star is None:
             epsilon_i = 0
@@ -138,7 +138,7 @@ def perturbation_rule(t, u, params: List):
             - epsilon_i*theta_i*x_i
         ydot_i = f*x_i - h*y_i + a_2*alpha_i*y_i - epsilon_i*theta_i*y_i
 
-        # Update derivative of state vector for ecosystem i and 
+        # Update derivative of state vector for ecosystem i and
         # state variable 0 (x) and 1 (y)
         du[i, 0] = xdot_i
         du[i, 1] = ydot_i
@@ -152,11 +152,11 @@ def gamma(y, a = 1, b = 1, c = 1):
 
 
 def alpha(
-    xs_to_i: List[float], 
-    ys_to_i: List[float], 
+    xs_to_i: List[float],
+    ys_to_i: List[float],
     d_to_i: List[float],
-    i: int, 
-    w_0: float = 1, 
+    i: int,
+    w_0: float = 1,
     alpha_0: float = -1,
     beta_2: float = 1,
     l: float = 600,
@@ -177,7 +177,7 @@ def alpha(
 
     Returns:
         Penalty coefficient.
-    
+
     References:
         Equation (8) and (9) in Cantin2020
     """
@@ -188,7 +188,7 @@ def alpha(
 def theta(t: int, t_star: int):
     """Models beginning of deforestation process at time t*
 
-    Args: 
+    Args:
         t: Timestep in integration of dynamical system.
         t_star: Timestep at which an ecosystem becomes deforested.
 
@@ -209,24 +209,24 @@ def theta(t: int, t_star: int):
         deforestation_coefficient = A/2 - (A/2)*np.cos(np.pi*(t - t_star))
     else:
         deforestation_coefficient = A
-    
-    return deforestation_coefficient 
+
+    return deforestation_coefficient
 
 
 def epsilon_k(
-        k: int, 
+        k: int,
         ecosytem_ids: Union[Set[int], List[EcosystemDeforestTime]]):
     """Boolean integer for deforestation effect on forest dynamical system.
 
     Args:
-        k: The integer of the `k^th` ecosystem. 
+        k: The integer of the `k^th` ecosystem.
         ecosystem_ids: Integers corresponding to the i^th
-            ecosystem that will undergo deforestation. This is 
+            ecosystem that will undergo deforestation. This is
             `{i_1, ..., i_N}` in Equation (17) Cantin2020. This could also
             just be a list of EcosystemDeforestTime named tuples.
 
     Returns:
-        1 if k in the set, 0 otherwise. 
+        1 if k in the set, 0 otherwise.
 
     References:
         Equation (17) from Cantin2020
@@ -238,8 +238,8 @@ def epsilon_k(
 
 
 def get_ecosystems_to_perturb_at_times_tstar(
-        t_timesteps: int, 
-        n_deforested_ecosystems: int, 
+        t_timesteps: int,
+        n_deforested_ecosystems: int,
         n_total_ecosystems: int,
         seed: int = 42) -> EcosystemDeforestTime:
     """Get list where elements are ecosytem id and tstep at which deforestation occurs.
@@ -250,23 +250,23 @@ def get_ecosystems_to_perturb_at_times_tstar(
     >>> perturbed_ecosystems = randomly_perturb_ecosystems(50, 2, 10)
     >>> perturbed_ecosystems
     [EcosystemDeforestTime(ecosystem_id=8, t_star=18),
-     EcosystemDeforestTime(ecosystem_id=1, t_star=22)] 
+     EcosystemDeforestTime(ecosystem_id=1, t_star=22)]
     >>> perturbed_ecosystems[0].ecosystem_id
     8
     >>> perturbed_ecosystems[0].t_star
     18
     ```
-    
+
     Args:
         t_timesteps: Number of timesteps over which integration will occur.
             For example, one might compute trajectories of a dynamical system
             over 50 timesteps (e.g., years), so then `t_timesteps = 50`.
         n_deforested_ecosystems: Number of ecosystems to deforest.
-        n_total_ecosystems: Total number of ecosystems.    
+        n_total_ecosystems: Total number of ecosystems.
 
     Returns:
         A list of EcosystemDeforestTime. The elemnts has a `ecosystem_id` and `t_star`
-        property. The `ecosystem_id` is deforested at time `t_star` according to 
+        property. The `ecosystem_id` is deforested at time `t_star` according to
         the `epsilon_k` and `theta` functions defined in this file.
 
     References:
@@ -276,15 +276,15 @@ def get_ecosystems_to_perturb_at_times_tstar(
     assert n_total_ecosystems >= 2, "there must be 2 or more ecosystems"
     assert n_deforested_ecosystems >= 0, \
         "number of ecosystems to perturb must be >= 0"
-    
-    # randomly generate ids for ecosystems that will be deforested 
+
+    # randomly generate ids for ecosystems that will be deforested
     ecosystem_ids_to_deforest = np.random.choice(
         n_total_ecosystems, size=(n_deforested_ecosystems,), replace=False)
 
     # randomly generate time steps at which ecosystem ids will be deforested
     timesteps_to_deforest = np.random.choice(
         t_timesteps, size=(n_deforested_ecosystems))
-    
+
     # combine the ecosystems and timesteps into a list of tuples
     ecosystem_time_tuples = []
 
