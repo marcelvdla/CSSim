@@ -8,6 +8,7 @@ from SALib.sample import saltelli
 from SALib.analyze import sobol
 
 import sys
+import pdb
 
 import pandas as pd
 import numpy as np
@@ -55,7 +56,10 @@ def get_data_sobol(problem, replicates, distinct_samples):
 
             data.iloc[count, 0:6] = vals
             # Sorry for converting a list to a string, but pandas iloc doesn't want to accept a list :(
-            data.iloc[count, 6] = str(densities)
+            data.iloc[count, 6] = densities[2]
+            # data.iloc[count, 7] = densities[1]
+            # data.iloc[count, 8] = densities[2]
+            # data.iloc[count, 9] = densities[3]
             count += 1
 
             # clear_output()
@@ -110,6 +114,10 @@ if __name__ == "__main__":
 
     data = get_data_sobol(problem, replicates, distinct_samples)
     data.to_csv('soboltest.csv')
+
+    # pdb.set_trace()
+    
+    # y2s = np.array([float(y[2]) for y in list(data['Densities'])])
 
     Si_density = sobol.analyze(problem, data['Densities'].values, print_to_console=True, calc_second_order=False)
     
