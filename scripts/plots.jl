@@ -8,7 +8,7 @@ using PyCall
 using Suppressor
 using LaTeXStrings
 
-include(joinpath(srcdir(), "n_forest.jl"))
+include(joinpath(srcdir(), "n_forest.jl")) # is this necessary?
 
 """
     phase_portrait(

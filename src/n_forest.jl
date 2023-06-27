@@ -6,18 +6,49 @@ include("common.jl") # is this the right way to include??
 """
     n_forest_system(u0::Matrix, params::Dict{Symbol, Any})
 """
-function n_forest_system(u0::Matrix, params::Dict{Symbol, Any})
+function n_forest_system(u0::AbstractMatrix, params::Dict{Symbol, Any})
     return CoupledODEs(n_forest_rule!, u0, params)
 end
 
 """
-    n_forest_system(u0::Matrix, params::Dict{Symbol, Any}, diffeq::NamedTuple)
+    n_forest_system(
+        u0::AbstractMatrix, params::Dict{Symbol, Any}, diffeq::NamedTuple)
 
 `n_forest_system` with parameter `diffeq` for solver arguments.
 """
 function n_forest_system(
-    u0::Matrix, params::Dict{Symbol, Any}, diffeq::NamedTuple)
+    u0::AbstractMatrix, params::Dict{Symbol, Any}, diffeq::NamedTuple)
     return CoupledODEs(n_forest_rule!, u0, params; diffeq=diffeq)
+end 
+
+"""
+    n_forest_system_oop(u0::AbstractMatrix, params::Dict{Symbol, Any})
+
+# Examples 
+```julia-repl
+julia> n = 2
+julia> params = Dict{Symbol,Any}(
+        :ρ  => 4.2, 
+        :f  => 1.0,
+        :α₀ => -1.0, 
+        :w₀ =>  1.0,
+        :a₁ => 1.0, 
+        :h  => 2.0, 
+        :a₂ => 0.0, 
+        :d  => [42], 
+        :l  => 600.0, 
+        :P₀ => 1.0, 
+        :β₁ => 0.0, 
+        :β₂ => 1.0,
+        :n  => n,
+        :ecosystems_to_deforest => [],
+    )
+julia> u0 = 4*rand(n, 2)
+julia> ds = n_forest_system_oop(u0, params)
+```
+"""
+function n_forest_system_oop(u0::AbstractMatrix, params::Dict{Symbol, Any})
+    return CoupledODEs(n_forest_rule, u0, params)
 end 
 
 """
@@ -25,7 +56,7 @@ end
 
 [1] : Equation (10) from Cantin2020
 """
-function n_forest_rule!(du, u::Matrix, params::Dict{Symbol, Any}, t)
+function n_forest_rule!(du, u::AbstractMatrix, params::Dict{Symbol, Any}, t)
     # distance between `i` and `i+1` forest vector
     d::Union{Vector{Any}, Vector{Int}} = []
 
@@ -72,6 +103,28 @@ function n_forest_rule!(du, u::Matrix, params::Dict{Symbol, Any}, t)
     end 
 
     return nothing
+end 
+
+"""
+    n_forest_rule(u, params::Dict{Symbol, Any}, t)
+
+DEPRECATED
+
+OOP `n_forest_rule` using [`n_forest_rule!`](@ref).
+"""
+function n_forest_rule(u, params::Dict{Symbol, Any}, t)
+    n_states = 2
+    n = params[:n]
+    du = zeros(n, n_states)
+
+    # The in-place rule requires an abstract matrix
+    u_reshaped = reshape(u, n, n_states)
+    n_forest_rule!(du, u_reshaped, params, t)
+
+    # return a static vector and permute the dims of du since
+    # du is of the shape [n, 2] such that [x1 y1; ... ; xi yi]
+    # so e.g., [x1 x2; y1 y2] --> [x1 y1; x2 y2]
+    return SVector{n*n_states}(permutedims(du))
 end 
 
 """
