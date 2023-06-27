@@ -1,7 +1,7 @@
 using DynamicalSystems
 using Symbolics
 using UnPack
-include("common.jl") # is this the right way to include??
+using CSSim
 
 """
     n_forest_system(u0::Matrix, params::Dict{Symbol, Any})

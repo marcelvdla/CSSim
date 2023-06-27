@@ -8,7 +8,7 @@ using PyCall
 using Suppressor
 using LaTeXStrings
 
-include(joinpath(srcdir(), "n_forest.jl")) # is this necessary?
+using CSSim: n_forest_system
 
 """
     phase_portrait(

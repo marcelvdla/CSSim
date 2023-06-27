@@ -4,8 +4,7 @@ using ChaosTools
 using UnPack
 using IntervalArithmetic: Interval, IntervalBox
 using LinearAlgebra: I
-
-include("common.jl")
+using CSSim
 
 """
     n_forest_system_oop(u0, params::Dict{Symbol, Any})
@@ -152,6 +151,86 @@ function n_forest_jacob!(J, u, params::Dict{Symbol, Any}, t)
     
     return nothing
 end
+
+"""
+    two_forest_system
+"""
+function two_forest_system(u0, params::Dict{Symbol, Any})
+    return CoupledODEs(two_forest_rule, u0, params)
+end 
+
+"""
+    two_forest_rule
+"""
+function two_forest_rule(u, params::Dict{Symbol, Any}, t)
+    @unpack ρ, f, a₁, h, a₂, d, l, 
+            α₀, w₀, P₀, β₁, β₂, 
+            ecosystems_to_deforest, # not used
+            n  = params
+    @assert n >= 1 "At least 1 forest ecosystem"
+    @assert length(d) == (n-1) "n-1 distances in distance vector `d`"
+
+    # state variables 
+    x₁ = u[1]
+    x₂ = u[2]
+    x = SVector(x₁, x₂)
+
+    y₁ = u[3]
+    y₂ = u[4]
+    y = SVector(y₁, y₂)
+
+    # Biotic pump
+    w₁ = n > 1 ? w(1, x, y, d, l, P₀, β₁, β₂) : 0
+    α₁ = n > 1 ? α(w₁, α₀, w₀) : 0
+
+    w₂ = n > 1 ? w(2, x, y, d, l, P₀, β₁, β₂) : 0
+    α₂ = n > 1 ? α(w₂, α₀, w₀) : 0
+
+    # forest systems 
+    ẋ₁ = ρ*y₁ - γ(y₁)*x₁ - f*x₁ + a₁*α₁*x₁
+    ẏ₁ = f*x₁ - h*y₁ + a₂*α₁*y₁
+
+    ẋ₂ = ρ*y₂ - γ(y₂)*x₂ - f*x₂ + a₁*α₂*x₂
+    ẏ₂ = f*x₂ - h*y₂ + a₂*α₂*y₂
+
+    return SVector(ẋ₁, ẋ₂, ẏ₁, ẏ₂)
+end 
+
+"""
+    two_forest_jacob
+"""
+function two_forest_jacob(u, params::Dict{Symbol, Any}, t)
+    @unpack ρ, f, a₁, h, a₂, d, l, 
+            α₀, w₀, P₀, β₁, β₂, 
+            ecosystems_to_deforest, # not used
+            n  = params
+    a = b = c = 1
+    # state variables 
+    x₁ = u[1]
+    x₂ = u[2]
+    x = SVector(x₁, x₂)
+
+    y₁ = u[3]
+    y₂ = u[4]
+    y = SVector(y₁, y₂)
+
+    # Biotic pump
+    w₁ = n > 1 ? w(1, x, y, d, l, P₀, β₁, β₂) : 0
+    α₁ = n > 1 ? α(w₁, α₀, w₀) : 0
+
+    w₂ = n > 1 ? w(2, x, y, d, l, P₀, β₁, β₂) : 0
+    α₂ = n > 1 ? α(w₂, α₀, w₀) : 0
+    
+    J = SMatrix{4, 4}(
+        [
+            (a₁*α₁ - c - f - a*((y[1] - b)^2)) (ρ - 2a*(y[1] - b)*x[1]) 0 0
+            (f) (a₂*α₁ - h) 0 0
+            0 0 (a₁*α₂ - c - f - a*((y[2] - b)^2)) (ρ - 2a*(y[2] - b)*x[2])
+            0 0 (f) (a₂*α₂ - h)
+        ]
+    )
+    return J
+end 
 
 """ 
     boxes(n::Int, interval_ui)

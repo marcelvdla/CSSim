@@ -7,6 +7,7 @@ using ChaosTools
 using LinearAlgebra: I
 using IntervalArithmetic: Interval
 
+using CSSim: two_forest_system, two_forest_jacob
 
 function generic_system(u0, n_states) 
     @show "generic system $(n_states)"
@@ -65,7 +66,7 @@ function lorenz_rule(u, p, t)
     du2 = u[1]*(ρ-u[3]) - u[2]
     du3 = u[1]*u[2] - β*u[3]
     du =  SVector{3}(du1, du2, du3)
-    @show typeof(u) typeof(du)
+    @show typeof(u) typeof(du1) typeof(du)
     return du
 end
 
