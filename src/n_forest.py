@@ -33,8 +33,8 @@ def deriv_forest(x, y, penalty_rate, args):
     Returns derivatives of x and y.
     """
     # Unpack arguments rho, gamma (not used), f, h, a1 and a2
-    fertility, mortality_young, aging_rate, biotic_pump_young, \
-    mortality_old, biotic_pump_old, dist, beta_2, P_0 = args
+    fertility, aging_rate, biotic_pump_young, \
+    mortality_old, biotic_pump_old, dist, beta_2, P_0, w_0, alpha_0, beta_1 = args
 
     # Calculate derivatives
     dx = fertility * y - ((y - 1)**2 + 1) * x - aging_rate * x \
@@ -56,7 +56,7 @@ def deriv_forest_perturbed(x, y, penalty_rate, epsilon, theta, args):
     Returns derivatives of x and y.
     """
     # Unpack arguments rho, gamma (not used), f, h, a1 and a2
-    fertility, aging_rate, biotic_pump_young, mortality_old, biotic_pump_old, dist, beta_2, P_0 = args
+    fertility, aging_rate, biotic_pump_young, mortality_old, biotic_pump_old, dist, beta_2, P_0, w_0, alpha_0, beta_1 = args
 
     # Calculate derivatives
     dx = fertility * y - ((y - 1)**2 + 1) * x - aging_rate * x + biotic_pump_young * penalty_rate * x - epsilon * theta * x
@@ -84,10 +84,10 @@ def system_n_forests(x0s, y0s, args, perturbed = False, timesteps = 100, dt = 0.
 
     assert (isinstance(args, (tuple, list, np.ndarray))),(
             "Your args variable should be a list-like.")
-    assert (len(args)== 8), ("Make sure you have all arguments needed included:"
-                             " fertility, aging_rate,"
-                             "biotic_pump_young,"
-                             "mortality_old, biotic_pump_old, dist, beta_2, P_0.")
+    assert (len(args)== 11), ("Make sure you have all arguments needed included: "
+                             "fertility, aging_rate, biotic_pump_young,"
+                             "mortality_old, biotic_pump_old, dist,"
+                              "beta_2, P_0, w_0, alpha_0, beta_1.")
     assert len(x0s) == len(y0s), ("The input vector for the young and old trees"
                                    "should be the same length.")
 
@@ -112,7 +112,7 @@ def system_n_forests(x0s, y0s, args, perturbed = False, timesteps = 100, dt = 0.
     for t in range(int(timesteps / dt)):
 
         penalties = alpha(x0s, y0s, dist=args[5]/(n-1), beta_2 = args[6],
-                          P_0 = args[7])
+                          P_0 = args[7], w_0=args[8], alpha_0=args[9], beta_1= args[10])
         for i in range(n):
 
             x_vals[i, t] = x0s[i]

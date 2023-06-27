@@ -30,6 +30,7 @@ def w_i(
     x: List[float],
     y: List[float],
     d: List[float],
+    beta_1: float=0,
     beta_2: float=1,
     l: float=600,
     P_0: float=1.0,):
@@ -59,13 +60,13 @@ def w_i(
         return P_0
     elif i == 1:
         # equation (5)
-        w = (P_0 + B(x[0], y[0], beta_2=beta_2)) * np.exp(-d[0] / l)
+        w = (P_0 + B(x[0], y[0], beta_1=beta_1, beta_2=beta_2)) * np.exp(-d[0] / l)
         return w
     else:
         # equation (6)
-        w = (P_0 + B(x[0], y[0], beta_2=beta_2)) * np.exp(-np.sum(d[0:i]) / l)
+        w = (P_0 + B(x[0], y[0], beta_1=beta_1, beta_2=beta_2)) * np.exp(-np.sum(d[0:i]) / l)
         for j in range(1, i+1):
-            w += B(x[j], y[j], beta_2=beta_2) * np.exp(-np.sum(d[j:i]) / l)
+            w += B(x[j], y[j], beta_1=beta_1, beta_2=beta_2) * np.exp(-np.sum(d[j:i]) / l)
         return w
 
 
@@ -75,6 +76,7 @@ def alpha(
     dist: Union[float, List[float]],
     w_0=1,
     alpha_0=-1,
+    beta_1=0,
     beta_2=1,
     P_0=1.00):
     """Penalty function for quantity of water received by forest ecosystems.
@@ -104,6 +106,6 @@ def alpha(
             "number of distances should match number of forests"
         d = dist
 
-    return [alpha_0 * (1 - w_i(i, x, y, d, beta_2=beta_2, P_0=P_0) / w_0)
+    return [alpha_0 * (1 - w_i(i, x, y, d, beta_1=beta_1, beta_2=beta_2, P_0=P_0) / w_0)
             for i in range(len(x))]
 
