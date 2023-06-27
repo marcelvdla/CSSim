@@ -149,7 +149,9 @@ function antonovsky_rule(u, params, t)
     ρ, f, h, a, b, c = params
     xdot = ρ*y - γ(y, a, b, c)*x - f*x
     ydot = f*x - h*y
-    return SVector(xdot, ydot)
+    du = SVector(xdot, ydot)
+    #@show typeof(du) typeof(t)
+    return du
 end 
 
 """

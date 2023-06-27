@@ -28,7 +28,8 @@ function phase_portrait(
     T::Int, 
     params::Dict{Symbol,Any}, 
     n_points::Int = 25,
-    max_density::Float64 = 4.0; 
+    max_density::Float64 = 4.0,
+    Δt = 0.01; 
     nrows::Int = 0,
     ncols::Int = 0,
     figsize::Tuple{Int, Int} = (8, 5))::Tuple{Figure, Matrix{PyCall.PyObject}}
@@ -65,7 +66,7 @@ function phase_portrait(
         for initial_point in 1:n_points
             u0 = u0s[initial_point, :, :]
             ds = n_forest_system(u0, params)
-            ds_trajectory, _ = trajectory(ds, T)
+            ds_trajectory, _ = trajectory(ds, T; Δt = Δt)
 
             # reshape statespace to `[timepoints, n_ecosystems, n_states]`
             ds_trajectory_tensor = reshape(

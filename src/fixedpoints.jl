@@ -2,6 +2,8 @@
 using DynamicalSystems
 using ChaosTools
 using UnPack
+using IntervalArithmetic: Interval, IntervalBox
+using LinearAlgebra: I
 
 include("common.jl")
 
@@ -38,17 +40,14 @@ function n_forest_rule(u, params::Dict{Symbol, Any}, t)
     n_states = 2
     n = length(u) ÷ n_states
 
-
-    @show u
+    @show typeof(u)
 
     # Get all x and y state variables
     x = u[1:n]
     y = u[n+1:length(u)]
 
-    @show x y
-
     # For storing the computed time derivatives
-    du = zeros(n*n_states) # TODO: This is causing issue....
+    du = Vector{AbstractFloat}(undef, n*n_states)
 
     for i in 1:n 
         # Get state variables 
@@ -126,8 +125,6 @@ function n_forest_jacob!(J, u, params::Dict{Symbol, Any}, t)
             n  = params
     @assert n >= 1 "At least 1 forest ecosystem"
     @assert length(d) == (n-1) "n-1 distances in distance vector `d`"
-
-    @show u
         
     a = b = c = 1
     J[:, :] .= 0
@@ -161,6 +158,6 @@ end
 
 Return `[interval]^2n` interval for an `n`
 """
-function boxes(n::Int, interval_ui)::IntervalBox
+function boxes(n::Int, interval_ui::Interval)::IntervalBox
     IntervalBox(repeat([interval_ui, interval_ui], n)...)
 end 
