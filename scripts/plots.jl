@@ -16,7 +16,6 @@ include(joinpath(srcdir(), "n_forest.jl"))
         params::Dict{Symbol,Any}, 
         n_points::Int = 25,
         max_density::Float64 = 4.0; 
-        plot_fixed_points::Bool = false,
         nrows::Int = 0,
         ncols::Int = 0,
         figsize::Tuple{Int, Int} = (8, 5))::Tuple{Figure, Matrix{PyCall.PyObject}}
@@ -30,7 +29,6 @@ function phase_portrait(
     params::Dict{Symbol,Any}, 
     n_points::Int = 25,
     max_density::Float64 = 4.0; 
-    plot_fixed_points::Bool = false,
     nrows::Int = 0,
     ncols::Int = 0,
     figsize::Tuple{Int, Int} = (8, 5))::Tuple{Figure, Matrix{PyCall.PyObject}}
@@ -48,19 +46,8 @@ function phase_portrait(
 
     @show size(axs)
 
-    # Generate the row and column indices as flat vectors for the plotting 
-    # ... handles case for nrows==1 and ncols==1 separately
-    if nrows == 1
-        row_ixs = [1 for i in 1:ncols]
-    else 
-        row_ixs = vcat([repeat([i], ncols) for i in 1:nrows]...)
-    end 
-
-    if ncols == 1
-        col_ixs = [1 for i in 1:nrows]
-    else 
-        col_ixs = repeat(1:ncols, nrows)
-    end 
+    # get the indices needed for the figure
+    row_ixs, col_ixs = get_row_col_ixs_as_vectors(nrows, ncols)
 
     @show row_ixs
     @show col_ixs
@@ -85,7 +72,6 @@ function phase_portrait(
                 Matrix(ds_trajectory), :, n, n_states)
 
             # iterate through ecosystems and plot the phase trajectories
-            # TODO: move to function for performance...
             for ecosystem_i in 1:n
                 row = row_ixs[ecosystem_i]
                 col = col_ixs[ecosystem_i]
@@ -102,11 +88,67 @@ function phase_portrait(
                         LaTeXString("\$y_{$(ecosystem_i)}\$"))
                 end 
             end 
-        end 
-
-        # TODO: Compute fixed points??
-        
+        end
     end 
 
     return fig, axs
+end 
+
+"""
+    get_row_col_ixs_from_one_dim
+
+Generate the row and column indices as flat vectors for plotting an `n`
+dimensional space, handling cases for nrows==1 and ncols==1 separately.
+
+# Examples
+```julia-repl
+julia> n_ecosystems = 6
+julia> nrows = 3
+julia> ncols = 2
+julia> row_ixs, col_ixs = get_row_col_ixs_as_vectors(nrows, ncols)
+([1, 1, 2, 2, 3, 3], [1, 2, 1, 2, 1, 2])
+julia> for i in 1:n_ecosystems
+           println(row_ixs[i], " ", col_ixs[i])
+       end
+1 1
+1 2
+2 1
+2 2
+3 1
+3 2
+```
+"""
+function get_row_col_ixs_as_vectors(
+    nrows::Int, ncols::Int)::Tuple{Vector{Int}, Vector{Int}}
+    if nrows == 1
+        row_ixs = [1 for i in 1:ncols]
+    else 
+        row_ixs = vcat([repeat([i], ncols) for i in 1:nrows]...)
+    end 
+
+    if ncols == 1
+        col_ixs = [1 for i in 1:nrows]
+    else 
+        col_ixs = repeat(1:ncols, nrows)
+    end 
+
+    return row_ixs, col_ixs
+end 
+
+"""
+    fixedpoints
+
+
+"""
+function fixedpoints(
+    nrows::Int, 
+    ncols::Int,
+    params::Dict{Symbol, Any};
+    lower_interval::Float64 = 0.0,
+    upper_interval::Float64 = 5.0)
+
+    # number of ecosystems 
+    n = params[:n]
+
+    fps::Vector{}
 end 
