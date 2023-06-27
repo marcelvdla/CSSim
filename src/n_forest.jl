@@ -52,7 +52,7 @@ function n_forest_system_oop(u0, params::Dict{Symbol, Any})
 end 
 
 """
-    n_forest_rule!(du, u::Matrix, params::Dict{Symbol, Any}, t)
+    n_forest_rule!(du, u::AbstractMatrix, params::Dict{Symbol, Any}, t)
 
 [1] : Equation (10) from Cantin2020
 """
@@ -241,7 +241,7 @@ function n_forest_sym_jacob(n::Int)
 end 
 
 """
-    n_forest_jacob!(J, u::Matrix, params::Dict{Symbol, Any}, t)
+    n_forest_jacob!(J, u::AbstractMatrix, params::Dict{Symbol, Any}, t)
 
 Create Jacobian `J` of an `n`-forest system in place using the state matrix `u`.
 
@@ -279,7 +279,7 @@ julia> J
   0.0   0.0   1.0      -0.735759
 ```
 """
-function n_forest_jacob!(J, u::Matrix, params::Dict{Symbol, Any}, t)
+function n_forest_jacob!(J, u::AbstractMatrix, params::Dict{Symbol, Any}, t)
     # distance between `i` and `i+1` forest vector
     d::Union{Vector{Any}, Vector{Int}} = []
     
@@ -321,6 +321,22 @@ function n_forest_jacob!(J, u::Matrix, params::Dict{Symbol, Any}, t)
     
     return nothing
 end
+
+"""
+    n_forest_jacob!(J, u::SVector, params::Dict{Symbol, Any}, t)
+
+Create Jacobian `J` of an `n`-forest system in place using the state vector `u`.
+
+The vector `u` is a vector of length `n * 2` such that 
+`[x1, x2, y1, y2, ..., xi, xi+1, yi, yi+1]` for i in 1 to n-1.
+"""
+function n_forest_jacob!(J, u::SVector, params::Dict{Symbol, Any}, t)
+    n = params[:n]
+    n_states = 2
+    u = reshape(u, n, n_states) 
+    n_forest_jacob!(J, u, params, t)
+    return nothing 
+end 
 
 """
     one_forest_system(u0; ρ, f, h, a = 1, b = 1, c = 1)
