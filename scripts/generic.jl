@@ -1,3 +1,5 @@
+# TODO: Search for generic lorenz96 or something with n-states 
+# and which also implements this OOP for reference
 using DrWatson
 @quickactivate :CSSim
 
