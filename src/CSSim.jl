@@ -7,7 +7,7 @@ hello_world() = println("Hello world!")
 
 # include("common.jl")  # 
 include("n_forest.jl")
-include("fixedpoint_systems.jl")
+include("fixedpoints.jl")
 include(joinpath(scriptsdir(), "plots.jl"))
 
 end # module CSSim

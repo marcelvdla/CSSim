@@ -1,5 +1,6 @@
 # Functions needed for fixed point analysis of n-forest systems
 using DynamicalSystems
+using ChaosTools
 using UnPack
 
 include("common.jl")
@@ -14,12 +15,12 @@ function n_forest_system_oop(u0, params::Dict{Symbol, Any})
 end 
 
 """
-    n_forest_rule(u::SVector, params::Dict{Symbol, Any}, t)
+    n_forest_rule(u, params::Dict{Symbol, Any}, t)
 
 OOP `n`-forest rule for biotic pump system with `u` as a vector of length 
 `n * 2` such that `[x1, x2, ..., xn, y1, y2, ..., yn]`.
 """
-function n_forest_rule(u::SVector, params::Dict{Symbol, Any}, t) 
+function n_forest_rule(u, params::Dict{Symbol, Any}, t) 
     # Distance between `i` and `i+1` forest vector
     d::Union{Vector{Any}, Vector{Int}} = [] 
 
@@ -37,12 +38,17 @@ function n_forest_rule(u::SVector, params::Dict{Symbol, Any}, t)
     n_states = 2
     n = length(u) ÷ n_states
 
+
+    @show u
+
     # Get all x and y state variables
     x = u[1:n]
-    y = u[n+1:end]
+    y = u[n+1:length(u)]
+
+    @show x y
 
     # For storing the computed time derivatives
-    du = zeros(n*n_states)
+    du = zeros(n*n_states) # TODO: This is causing issue....
 
     for i in 1:n 
         # Get state variables 
@@ -67,13 +73,13 @@ end
 
 
 """ 
-    n_forest_jacob!(J, u::SVector, params::Dict{Symbol, Any}, t)
+    n_forest_jacob!(J, u, params::Dict{Symbol, Any}, t)
 
 Jacobian for `n`-forest system with biotic mechanism and `u` as a vector of 
 length `n * 2` such that `[x1, x2, ..., xn, y1, y2, ..., yn]`. The rule for 
 the Jacobian was determined by visual inspection of the outputs of 
-[`n_forest_sym_jacob`](@ref).
-
+[`n_forest_sym_jacob`](@ref). Note that this will be used with 
+[`ChaosTools.fixedpoints`](@ref).
 
 # Examples 
 ```jldoctest
@@ -106,7 +112,7 @@ julia> J
   0.0   0.0   1.0      -0.735759
 ```
 """
-function n_forest_jacob!(J, u::SVector, params::Dict{Symbol, Any}, t)
+function n_forest_jacob!(J, u, params::Dict{Symbol, Any}, t)
     # Distance between `i` and `i+1` forest vector
     d::Union{Vector{Any}, Vector{Int}} = []
 
@@ -120,16 +126,17 @@ function n_forest_jacob!(J, u::SVector, params::Dict{Symbol, Any}, t)
             n  = params
     @assert n >= 1 "At least 1 forest ecosystem"
     @assert length(d) == (n-1) "n-1 distances in distance vector `d`"
+
+    @show u
         
     a = b = c = 1
     J[:, :] .= 0
  
     n_states = 2
-    n = length(u) ÷ n_states
 
     # Get all x and y state variables
     x = u[1:n]
-    y = u[n+1:end]
+    y = u[n+1:n*n_states]
     
     # define the jacobian inplace using the rule determined 
     ecosystem_id = 1
@@ -148,3 +155,12 @@ function n_forest_jacob!(J, u::SVector, params::Dict{Symbol, Any}, t)
     
     return nothing
 end
+
+""" 
+    boxes(n::Int, interval_ui)
+
+Return `[interval]^2n` interval for an `n`
+"""
+function boxes(n::Int, interval_ui)::IntervalBox
+    IntervalBox(repeat([interval_ui, interval_ui], n)...)
+end 
