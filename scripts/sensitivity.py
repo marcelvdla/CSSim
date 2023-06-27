@@ -25,7 +25,7 @@ def get_data_sobol(problem, replicates, distinct_samples):
     count = 0
     data = pd.DataFrame(index=range(replicates*len(param_values)), 
                                     columns=['alpha_0', 'P_0', 'w_0', 'distance', 'beta_1', 'beta_2'])
-    data['Densities'] = None
+    data['x1'], data['y1'], data['x2'], data['y2'] = None, None, None, None
 
     # Fixed variable values
     rho = 4.2     # fertility
@@ -56,14 +56,14 @@ def get_data_sobol(problem, replicates, distinct_samples):
 
             data.iloc[count, 0:6] = vals
             # Sorry for converting a list to a string, but pandas iloc doesn't want to accept a list :(
-            data.iloc[count, 6] = densities[2]
-            # data.iloc[count, 7] = densities[1]
-            # data.iloc[count, 8] = densities[2]
-            # data.iloc[count, 9] = densities[3]
+            data.iloc[count, 6] = densities[0]
+            data.iloc[count, 7] = densities[1]
+            data.iloc[count, 8] = densities[2]
+            data.iloc[count, 9] = densities[3]
             count += 1
 
             # clear_output()
-            print(f'{count / (len(param_values) * (replicates)) * 100:.2f}% done')
+            print(f'{count / (len(param_values) * (replicates)) * 100:.2f}% done', end='\r')
     
     return data 
 
@@ -109,17 +109,17 @@ if __name__ == "__main__":
     problem = {
         'num_vars': 6,
         'names': ['alpha_0', 'P_0', 'w_0', 'distance', 'beta_1', 'beta_2'],
-        'bounds': [[-2.0, -1.0], [1.0, 2.5], [1.0, 2.0], [50, 250], [0.0, 2.0], [0.0, 2.0]]
+        'bounds': [[-2.0, -1.0], [0.8, 1.2], [0.75, 1.25], [10, 900], [0.0, 0.5], [0.5, 2.0]]
     }
 
     data = get_data_sobol(problem, replicates, distinct_samples)
-    data.to_csv('soboltest.csv')
+    data.to_csv(f'sobol_{replicates}_{distinct_samples}.csv')
 
     # pdb.set_trace()
     
     # y2s = np.array([float(y[2]) for y in list(data['Densities'])])
 
-    Si_density = sobol.analyze(problem, data['Densities'].values, print_to_console=True, calc_second_order=False)
+    Si_density = sobol.analyze(problem, data['y2'].values, print_to_console=True, calc_second_order=False)
     
     # First order, shouldnt be needed
     # plot_index(Si_density, problem['names'], '1', 'First order sensitivity')
