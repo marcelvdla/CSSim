@@ -30,8 +30,8 @@ def get_data_sobol(problem, replicates, distinct_samples):
     # Fixed variable values
     rho = 4.2     # fertility
     f = 1         # aging_rate
-    a_1 = 1       # biotic_pump_young
-    a_2 = 0       # biotic_pump_old
+    a_1 = 0.1     # biotic_pump_young
+    a_2 = 0.05    # biotic_pump_old
     h = 2         # mortality_old
 
     for i in range(replicates):
@@ -109,7 +109,7 @@ if __name__ == "__main__":
     problem = {
         'num_vars': 6,
         'names': ['alpha_0', 'P_0', 'w_0', 'distance', 'beta_1', 'beta_2'],
-        'bounds': [[-2.0, -1.0], [0.8, 1.2], [0.75, 1.25], [10, 900], [0.0, 0.5], [0.5, 2.0]]
+        'bounds': [[-2.0, -1.0], [0.8, 1.2], [0.75, 1.25], [10, 900], [0.0, 0.5], [0.05, 1.2]]
     }
 
     data = get_data_sobol(problem, replicates, distinct_samples)
