@@ -23,7 +23,7 @@ OOP `n`-forest rule for biotic pump system with `u` as a vector of length
 """
 function n_forest_rule(u, params::Dict{Symbol, Any}, t) 
     # Distance between `i` and `i+1` forest vector
-    d::Union{Vector{Any}, Vector{Int}} = [] 
+    d::Union{Vector{Any}, Vector{<:Real}} = [] 
 
     # not used
     ecosystems_to_deforest::Union{
@@ -112,7 +112,7 @@ julia> J
 """
 function n_forest_jacob!(J, u, params::Dict{Symbol, Any}, t)
     # Distance between `i` and `i+1` forest vector
-    d::Union{Vector{Any}, Vector{Int}} = []
+    d::Union{Vector{Any}, Vector{<:Real}} = [] 
 
     # Not used
     ecosystems_to_deforest::Union{

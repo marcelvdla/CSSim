@@ -7,6 +7,7 @@ export α, w, γ, εₖ, B, θ, ecosystems_times_to_deforest, EcosystemDeforestT
 export one_forest_system, antonovsky_jacob
 export two_forest_system, two_forest_jacob
 export n_forest_system, n_forest_system_oop
+export phase_portrait
 
 hello_world() = println("Hello world!")
 

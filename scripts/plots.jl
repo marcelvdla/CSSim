@@ -8,7 +8,7 @@ using PyCall
 using Suppressor
 using LaTeXStrings
 
-using CSSim: n_forest_system
+using CSSim
 
 """
     phase_portrait(
@@ -20,9 +20,9 @@ using CSSim: n_forest_system
         ncols::Int = 0,
         figsize::Tuple{Int, Int} = (8, 5))::Tuple{Figure, Matrix{PyCall.PyObject}}
 
-Plots `params[:n]` phase portraits of `yᵢ` vs. `xᵢ`
-
-Optionally `plot_fixed_points` on phase portraits.
+Plots `params[:n]` phase portraits of `yᵢ` vs. `xᵢ` using a number `n_points`
+of initial conditions and evolving the system over `T` total timesteps. Provide
+`nrows` and `ncols` such that `nrows*ncols == params[:n]`.
 """
 function phase_portrait(
     T::Int, 
@@ -64,6 +64,7 @@ function phase_portrait(
     # mixed data types `params`
     @suppress begin 
         for initial_point in 1:n_points
+            # compute trajectories 
             u0 = u0s[initial_point, :, :]
             ds = n_forest_system(u0, params)
             ds_trajectory, _ = trajectory(ds, T; Δt = Δt)
@@ -134,22 +135,4 @@ function get_row_col_ixs_as_vectors(
     end 
 
     return row_ixs, col_ixs
-end 
-
-"""
-    fixedpoints
-
-
-"""
-function fixedpoints(
-    nrows::Int, 
-    ncols::Int,
-    params::Dict{Symbol, Any};
-    lower_interval::Float64 = 0.0,
-    upper_interval::Float64 = 5.0)
-
-    # number of ecosystems 
-    n = params[:n]
-
-    fps::Vector{}
 end 

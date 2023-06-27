@@ -28,7 +28,7 @@ end
 """
 function n_forest_rule!(du, u::AbstractMatrix, params::Dict{Symbol, Any}, t)
     # distance between `i` and `i+1` forest vector
-    d::Union{Vector{Any}, Vector{Int}} = []
+    d::Union{Vector{Any}, Vector{<:Real}} = []
 
     ecosystems_to_deforest::Union{
         Vector{Any}, Vector{EcosystemDeforestTime}} = []
