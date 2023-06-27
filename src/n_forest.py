@@ -56,7 +56,7 @@ def deriv_forest_perturbed(x, y, penalty_rate, epsilon, theta, args):
     Returns derivatives of x and y.
     """
     # Unpack arguments rho, gamma (not used), f, h, a1 and a2
-    fertility, aging_rate, biotic_pump_young, mortality_old, biotic_pump_old, dist, beta_2, P_0 = args
+    fertility, aging_rate, biotic_pump_young, mortality_old, biotic_pump_old, dist, beta_2, P_0, w_0, alpha_0, beta_1 = args
 
     # Calculate derivatives
     dx = fertility * y - ((y - 1)**2 + 1) * x - aging_rate * x + biotic_pump_young * penalty_rate * x - epsilon * theta * x
