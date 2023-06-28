@@ -114,8 +114,8 @@ julia> J
 4×4 Matrix{Float64}:
  -2.0   1.0   0.0       0.0
   1.0  -1.0   0.0       0.0
-  0.0   0.0  -1.73576   1.0
-  0.0   0.0   1.0      -0.735759
+  0.0   0.0  -2.10364   1.0
+  0.0   0.0   1.0      -1.10364
 ```
 """
 function n_forest_jacob!(J, u::AbstractVector, params::Dict{Symbol, Any}, t)
