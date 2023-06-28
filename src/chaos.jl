@@ -10,7 +10,7 @@ using CSSim
 """
     n_forest_tds(u0, params::Dict{Symbol, Any})
 
-Tangent dynamical system for `n`-forest system.
+Tangent dynamical system for `n`-forest system without perturbation.
 
 TODO: This currently uses an out-of-place dynamical system, and thus may 
 be improved using an in-place system.
@@ -24,7 +24,7 @@ end
 """
     n_forest_system_oop(u0, params::Dict{Symbol, Any})
 
-OOP `n`-forest CoupledODEs system with biotic pump mechanism.
+OOP `n`-forest CoupledODEs system without perturbation.
 """
 function n_forest_system_oop(u0, params::Dict{Symbol, Any})
     return CoupledODEs(n_forest_rule, u0, params)
@@ -33,7 +33,7 @@ end
 """
     n_forest_rule(u, params::Dict{Symbol, Any}, t)
 
-OOP `n`-forest rule for biotic pump system with `u` as a vector of length 
+OOP `n`-forest rule without perturbation with `u` as a vector of length 
 `n * 2` such that `[x1, x2, ..., xn, y1, y2, ..., yn]`. This rule is an
 out-of-place creation of the time derivative vector `du` since this was 
 originally required for use with [`ChaosTools.fixedpoints`](@ref)
@@ -63,7 +63,7 @@ function n_forest_rule(u::SVector, params::Dict{Symbol, Any}, t)
     y = u[n+1:length(u)]
 
     # For storing the computed time derivatives
-    du = Vector{AbstractFloat}(undef, n*n_states)
+    du = similar(u)
 
     for i in 1:n 
         # Get state variables 
@@ -90,7 +90,7 @@ end
 """ 
     n_forest_jacob!(J, u, params::Dict{Symbol, Any}, t)
 
-Jacobian for `n`-forest system with biotic mechanism and `u` as a vector of 
+Jacobian for `n`-forest system without perturbation and `u` as a vector of 
 length `n * 2` such that `[x1, x2, ..., xn, y1, y2, ..., yn]`. The rule for 
 the Jacobian was determined by visual inspection of the outputs of 
 [`n_forest_sym_jacob`](@ref). Note that this will be used with 
@@ -127,7 +127,7 @@ julia> J
   0.0   0.0   1.0      -0.735759
 ```
 """
-function n_forest_jacob!(J, u::SVector, params::Dict{Symbol, Any}, t)
+function n_forest_jacob!(J, u, params::Dict{Symbol, Any}, t)
     # Distance between `i` and `i+1` forest vector
     d::Union{Vector{Any}, Vector{<:Real}} = [] 
 
