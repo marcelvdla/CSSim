@@ -5,9 +5,9 @@ using UnPack
 using CSSim
 
 """
-    n_forest_system(u0::Matrix, params::Dict{Symbol, Any})
+    n_forest_system(u0, params::Dict{Symbol, Any})
 """
-function n_forest_system(u0::AbstractMatrix, params::Dict{Symbol, Any})
+function n_forest_system(u0, params::Dict{Symbol, Any})
     return CoupledODEs(n_forest_rule!, u0, params)
 end
 
