@@ -24,11 +24,24 @@ end
 """
     B(xᵢ, yᵢ, β₁ = 0, β₂ = 1)
 
-Return quantity of water evaporated of `i^th` forest.
+Return quantity of water evaporated of `i^th` forest assuming constant surface.
 
 [1] : Equation (7) from Cantin2020
 """
 B(xᵢ, yᵢ, β₁ = 0, β₂ = 1) = β₁*xᵢ + β₂*yᵢ
+
+"""
+    B(xᵢ, yᵢ, Sᵢ)
+
+Return quantity of water evaporated of `i^th` forest assuming variable surface.
+
+[1] : Equation (7) from Cantin2020
+"""
+B(xᵢ, yᵢ, Sᵢ) = β₁(Sᵢ)*xᵢ + β₂(Sᵢ)*yᵢ
+
+β₁(Sᵢ) = throw("unimplemented")
+
+β₂(Sᵢ) = throw("unimplemented")
 
 """
     α(wᵢ, α₀, w₀)
