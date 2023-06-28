@@ -1,11 +1,25 @@
 # NOTE: This code is not used
-# Functions needed for fixed point analysis of n-forest systems
+# Functions needed for chaotic of n-forest systems
 using DynamicalSystems
 using ChaosTools
 using UnPack
 using IntervalArithmetic: Interval, IntervalBox
 using LinearAlgebra: I
 using CSSim
+
+"""
+    n_forest_tds(u0, params::Dict{Symbol, Any})
+
+Tangent dynamical system for `n`-forest system.
+
+TODO: This currently uses an out-of-place dynamical system, and thus may 
+be improved using an in-place system.
+"""
+function n_forest_tds(u0, params::Dict{Symbol, Any})
+    ds = n_forest_system_oop(u0, params)
+    tds = TangentDynamicalSystem(ds; J = n_forest_jacob!)
+    return tds 
+end 
 
 """
     n_forest_system_oop(u0, params::Dict{Symbol, Any})
@@ -20,9 +34,11 @@ end
     n_forest_rule(u, params::Dict{Symbol, Any}, t)
 
 OOP `n`-forest rule for biotic pump system with `u` as a vector of length 
-`n * 2` such that `[x1, x2, ..., xn, y1, y2, ..., yn]`.
+`n * 2` such that `[x1, x2, ..., xn, y1, y2, ..., yn]`. This rule is an
+out-of-place creation of the time derivative vector `du` since this was 
+originally required for use with [`ChaosTools.fixedpoints`](@ref)
 """
-function n_forest_rule(u, params::Dict{Symbol, Any}, t) 
+function n_forest_rule(u::SVector, params::Dict{Symbol, Any}, t) 
     # Distance between `i` and `i+1` forest vector
     d::Union{Vector{Any}, Vector{<:Real}} = [] 
 
@@ -111,7 +127,7 @@ julia> J
   0.0   0.0   1.0      -0.735759
 ```
 """
-function n_forest_jacob!(J, u, params::Dict{Symbol, Any}, t)
+function n_forest_jacob!(J, u::SVector, params::Dict{Symbol, Any}, t)
     # Distance between `i` and `i+1` forest vector
     d::Union{Vector{Any}, Vector{<:Real}} = [] 
 
