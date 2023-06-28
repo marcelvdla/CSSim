@@ -1,5 +1,4 @@
-# NOTE: This code is not used
-# Functions needed for chaotic of n-forest systems
+# Functions needed for chaotic analysis of n-forest systems
 using DynamicalSystems
 using ChaosTools
 using UnPack
