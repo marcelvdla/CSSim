@@ -1,3 +1,4 @@
+# Functions for making plots 
 using DrWatson
 @quickactivate :CSSim
 
@@ -8,7 +9,7 @@ using PyCall
 using Suppressor
 using LaTeXStrings
 
-include(joinpath(srcdir(), "n_forest.jl"))
+using CSSim
 
 """
     phase_portrait(
@@ -16,21 +17,20 @@ include(joinpath(srcdir(), "n_forest.jl"))
         params::Dict{Symbol,Any}, 
         n_points::Int = 25,
         max_density::Float64 = 4.0; 
-        plot_fixed_points::Bool = false,
         nrows::Int = 0,
         ncols::Int = 0,
         figsize::Tuple{Int, Int} = (8, 5))::Tuple{Figure, Matrix{PyCall.PyObject}}
 
-Plots `params[:n]` phase portraits of `yᵢ` vs. `xᵢ`
-
-Optionally `plot_fixed_points` on phase portraits.
+Plots `params[:n]` phase portraits of `yᵢ` vs. `xᵢ` using a number `n_points`
+of initial conditions and evolving the system over `T` total timesteps. Provide
+`nrows` and `ncols` such that `nrows*ncols == params[:n]`.
 """
 function phase_portrait(
     T::Int, 
     params::Dict{Symbol,Any}, 
     n_points::Int = 25,
-    max_density::Float64 = 4.0; 
-    plot_fixed_points::Bool = false,
+    max_density::Float64 = 4.0,
+    Δt = 0.01; 
     nrows::Int = 0,
     ncols::Int = 0,
     figsize::Tuple{Int, Int} = (8, 5))::Tuple{Figure, Matrix{PyCall.PyObject}}
@@ -48,19 +48,8 @@ function phase_portrait(
 
     @show size(axs)
 
-    # Generate the row and column indices as flat vectors for the plotting 
-    # ... handles case for nrows==1 and ncols==1 separately
-    if nrows == 1
-        row_ixs = [1 for i in 1:ncols]
-    else 
-        row_ixs = vcat([repeat([i], ncols) for i in 1:nrows]...)
-    end 
-
-    if ncols == 1
-        col_ixs = [1 for i in 1:nrows]
-    else 
-        col_ixs = repeat(1:ncols, nrows)
-    end 
+    # get the indices needed for the figure
+    row_ixs, col_ixs = get_row_col_ixs_as_vectors(nrows, ncols)
 
     @show row_ixs
     @show col_ixs
@@ -76,16 +65,16 @@ function phase_portrait(
     # mixed data types `params`
     @suppress begin 
         for initial_point in 1:n_points
+            # compute trajectories 
             u0 = u0s[initial_point, :, :]
             ds = n_forest_system(u0, params)
-            ds_trajectory, _ = trajectory(ds, T)
+            ds_trajectory, _ = trajectory(ds, T; Δt = Δt)
 
             # reshape statespace to `[timepoints, n_ecosystems, n_states]`
             ds_trajectory_tensor = reshape(
                 Matrix(ds_trajectory), :, n, n_states)
 
             # iterate through ecosystems and plot the phase trajectories
-            # TODO: move to function for performance...
             for ecosystem_i in 1:n
                 row = row_ixs[ecosystem_i]
                 col = col_ixs[ecosystem_i]
@@ -102,11 +91,49 @@ function phase_portrait(
                         LaTeXString("\$y_{$(ecosystem_i)}\$"))
                 end 
             end 
-        end 
-
-        # TODO: Compute fixed points??
-        
+        end
     end 
 
     return fig, axs
+end 
+
+"""
+    get_row_col_ixs_from_one_dim
+
+Generate the row and column indices as flat vectors for plotting an `n`
+dimensional space, handling cases for nrows==1 and ncols==1 separately.
+
+# Examples
+```julia-repl
+julia> n_ecosystems = 6
+julia> nrows = 3
+julia> ncols = 2
+julia> row_ixs, col_ixs = get_row_col_ixs_as_vectors(nrows, ncols)
+([1, 1, 2, 2, 3, 3], [1, 2, 1, 2, 1, 2])
+julia> for i in 1:n_ecosystems
+           println(row_ixs[i], " ", col_ixs[i])
+       end
+1 1
+1 2
+2 1
+2 2
+3 1
+3 2
+```
+"""
+function get_row_col_ixs_as_vectors(
+    nrows::Int, ncols::Int)::Tuple{Vector{Int}, Vector{Int}}
+    if nrows == 1
+        row_ixs = [1 for i in 1:ncols]
+    else 
+        row_ixs = vcat([repeat([i], ncols) for i in 1:nrows]...)
+    end 
+
+    if ncols == 1
+        col_ixs = [1 for i in 1:nrows]
+    else 
+        col_ixs = repeat(1:ncols, nrows)
+    end 
+
+    return row_ixs, col_ixs
 end 

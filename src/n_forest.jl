@@ -1,33 +1,34 @@
 using DynamicalSystems
 using Symbolics
 using UnPack
-include("common.jl") # is this the right way to include??
+using CSSim
 
 """
     n_forest_system(u0::Matrix, params::Dict{Symbol, Any})
 """
-function n_forest_system(u0::Matrix, params::Dict{Symbol, Any})
+function n_forest_system(u0::AbstractMatrix, params::Dict{Symbol, Any})
     return CoupledODEs(n_forest_rule!, u0, params)
 end
 
 """
-    n_forest_system(u0::Matrix, params::Dict{Symbol, Any}, diffeq::NamedTuple)
+    n_forest_system(
+        u0::AbstractMatrix, params::Dict{Symbol, Any}, diffeq::NamedTuple)
 
 `n_forest_system` with parameter `diffeq` for solver arguments.
 """
 function n_forest_system(
-    u0::Matrix, params::Dict{Symbol, Any}, diffeq::NamedTuple)
+    u0::AbstractMatrix, params::Dict{Symbol, Any}, diffeq::NamedTuple)
     return CoupledODEs(n_forest_rule!, u0, params; diffeq=diffeq)
 end 
 
 """
-    n_forest_rule!(du, u::Matrix, params::Dict{Symbol, Any}, t)
+    n_forest_rule!(du, u::AbstractMatrix, params::Dict{Symbol, Any}, t)
 
 [1] : Equation (10) from Cantin2020
 """
-function n_forest_rule!(du, u::Matrix, params::Dict{Symbol, Any}, t)
+function n_forest_rule!(du, u::AbstractMatrix, params::Dict{Symbol, Any}, t)
     # distance between `i` and `i+1` forest vector
-    d::Union{Vector{Any}, Vector{Int}} = []
+    d::Union{Vector{Any}, Vector{<:Real}} = []
 
     ecosystems_to_deforest::Union{
         Vector{Any}, Vector{EcosystemDeforestTime}} = []
@@ -51,8 +52,8 @@ function n_forest_rule!(du, u::Matrix, params::Dict{Symbol, Any}, t)
     ecosystem_ids_to_deforest = getproperty.(ecosystems_to_deforest, :i)
     tstars = getproperty.(ecosystems_to_deforest, :tstar)
     for i in 1:n 
-        xᵢ = u[i, x_ix] 
-        yᵢ = u[i, y_ix]
+        xᵢ = x[i] 
+        yᵢ = y[i] 
 
         # Biotic pump 
         wᵢ = n > 1 ? w(i, x, y, d, l, P₀, β₁, β₂) : 0
@@ -123,88 +124,6 @@ function n_forest_sym_jacob(n::Int)
 end 
 
 """
-    n_forest_jacob!(J, u::Matrix, params::Dict{Symbol, Any}, t)
-
-Create Jacobian `J` of an `n`-forest system in place using the state matrix `u`.
-
-The state matrix `u` is `(n, 2)`. The rule for the Jacobian was determined 
-by visual inspection of the outputs of [`n_forest_sym_jacob`](@ref).
-
-# Examples 
-```jldoctest
-julia> # Test jacobian for one forest system
-julia> n = 1;
-julia> params = Dict(
-    :ρ => 1, :f => 1, :a₁ => 1, :h => 1, :a₂ => 1, 
-    :d => [], :l => 1, :α₀ => 1, :w₀ => 1, :P₀ => 1, 
-    :β₁ => 1, :β₂ => 1, :ecosystems_to_deforest => [], 
-    :n => n);
-julia> J = zeros(n*2, n*2);
-julia> u = ones(n, 2);
-julia> n_forest_jacob!(J, u, params, 1);
-julia> J
-2×2 Matrix{Float64}:
- -2.0   1.0
-  1.0  -1.0
-julia> # Test jacobian for two forest system
-julia> n = 2
-julia> params[:n] = n
-julia> params[:d] = [1]
-julia> J = zeros(n*2, n*2);
-julia> u = ones(n, 2);
-julia> n_forest_jacob!(J, u, params, 1);
-julia> J
-4×4 Matrix{Float64}:
- -2.0   1.0   0.0       0.0
-  1.0  -1.0   0.0       0.0
-  0.0   0.0  -1.73576   1.0
-  0.0   0.0   1.0      -0.735759
-```
-"""
-function n_forest_jacob!(J, u::Matrix, params::Dict{Symbol, Any}, t)
-    # distance between `i` and `i+1` forest vector
-    d::Union{Vector{Any}, Vector{Int}} = []
-    
-    ecosystems_to_deforest::Union{
-        Vector{Any}, Vector{EcosystemDeforestTime}} = []
-
-    @unpack ρ, f, a₁, h, a₂, d, l, 
-            α₀, w₀, P₀, β₁, β₂, 
-            ecosystems_to_deforest,
-            n  = params
-    @assert n >= 1 "At least 1 forest ecosystem"
-    @assert length(d) == (n-1) "n-1 distances in distance vector `d`"
-        
-    a = b = c = 1
-    J[:, :] .= 0
-    
-    # two state variable indices
-    x_ix = 1
-    y_ix = 2
-
-    # x and y for all ecosystems
-    x = u[:, x_ix]
-    y = u[:, y_ix]
-    
-    # define the jacobian inplace using the rule determined 
-    ecosystem_id = 1
-    for i in 1:2:2*n
-        xᵢ = x[ecosystem_id]
-        yᵢ = y[ecosystem_id]
-        wᵢ = w(ecosystem_id, x, y, d, l, P₀, β₁, β₂)
-        αᵢ = α(wᵢ, α₀, w₀)
-        
-        J[i, i] = -c - f + a₁*αᵢ - a*(-b + yᵢ)^2
-        J[i, i+1] = ρ - 2*a*(-b + yᵢ)*xᵢ
-        J[i+1, i] = f
-        J[i+1, i+1] = -h + a₂*αᵢ
-        ecosystem_id += 1
-    end 
-    
-    return nothing
-end
-
-"""
     one_forest_system(u0; ρ, f, h, a = 1, b = 1, c = 1)
 
 Coupled ODE system for modeling the dynamics of a single forest ecosystem's
@@ -230,7 +149,9 @@ function antonovsky_rule(u, params, t)
     ρ, f, h, a, b, c = params
     xdot = ρ*y - γ(y, a, b, c)*x - f*x
     ydot = f*x - h*y
-    return SVector(xdot, ydot)
+    du = SVector(xdot, ydot)
+    #@show typeof(du) typeof(t)
+    return du
 end 
 
 """
