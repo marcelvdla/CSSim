@@ -91,7 +91,7 @@ target/
 .ipynb_checkpoints/
 
 # exclude data from source control by default
-data/
+# data/
 
 # Ignore keras checkpoints
 *checkpoint*
