@@ -29,22 +29,26 @@ function phase_portrait(
     T::Int, 
     params::Dict{Symbol,Any}, 
     n_points::Int = 25,
-    max_density::Float64 = 4.0,
-    Δt = 0.01; 
+    max_density::Float64 = 4.0;
+    Δt = 0.01, 
     nrows::Int = 0,
     ncols::Int = 0,
-    figsize::Tuple{Int, Int} = (8, 5))::Tuple{Figure, Matrix{PyCall.PyObject}}
+    figsize::Tuple{Int, Int} = (8, 5),
+    sharex::Bool = false, 
+    sharey::Bool = false,
+    seed::Int = 42)::Tuple{Figure, Matrix{PyCall.PyObject}}
 
     # Initialize data for phase portrait
     n = params[:n]
     n_states = 2
-    u0s = max_density*rand(MersenneTwister(42), n_points, n, n_states)
+    u0s = max_density*rand(MersenneTwister(seed), n_points, n, n_states)
 
     @assert nrows*ncols == n "number of rows and cols must match num systems"
 
     # Instantiate fig+axs with the appropriate kwargs
     fig, axs = plt.subplots(
-        squeeze=false, nrows=nrows, ncols=ncols, figsize=figsize)
+        squeeze=false, nrows=nrows, ncols=ncols, figsize=figsize,
+        sharex=sharex, sharey=sharey)
 
     @show size(axs)
 
