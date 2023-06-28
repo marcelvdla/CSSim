@@ -40,7 +40,7 @@ from src.penalty import alpha
 
 Go to [julialang.org](https://julialang.org/downloads/).
 
-*On Linux:*
+*On Linux (this is the most stable setup, so please use this if possible):*
 
 ```
 cd ~
@@ -54,13 +54,13 @@ export to the `PATH` variable with `/home/<INSERT YOUR USERNAME>`. Finally,
 `source ~/.bashrc` and then check to see that the Julia REPL work
 by typing `julia`.
 
-*On Windows:*
+*On Windows (unstable):*
 
 ```
 TODO
 ```
 
-*On MacOS:*
+*On MacOS (semi-stable):*
 
 On macOS, a julia-1.9.1-mac64.dmg file is provided, which contains Julia-1.9.app. Installation is the same as any other Mac software: drag the Julia-1.9.app to Applications Folder's Shortcut. The Julia download runs on macOS 10.9 Mavericks and later releases. You can build from source for macOS 10.6 Snow Leopard (possibly earlier versions as well) and 32-bit but neither are fully supported.
 
@@ -104,8 +104,7 @@ here for more information on this.
 
 *For developers only:*
 
-To setup `Revise.jl`, follow the instructions
-described [here](https://timholy.github.io/Revise.jl/stable/) and make sure
+To setup `Revise.jl`, follow the instructions described [here](https://timholy.github.io/Revise.jl/stable/) and make sure
 to modify your `~/.julia/config/startup.jl` to include `using Revise`.
 
 # References
