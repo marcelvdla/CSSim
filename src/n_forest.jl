@@ -1,3 +1,4 @@
+# Functions for the n-forest model with/without biotic/deforestation components
 using DynamicalSystems
 using Symbolics
 using UnPack

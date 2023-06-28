@@ -1,4 +1,4 @@
-# Functions for making plots 
+# Functions for making certain plots 
 using DrWatson
 @quickactivate :CSSim
 

@@ -1,3 +1,4 @@
+# Small functions used in the modeling of the n-forest system
 using StatsBase
 using Random
 

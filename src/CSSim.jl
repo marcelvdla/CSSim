@@ -3,13 +3,16 @@ module CSSim
 using DynamicalSystems
 using DrWatson
 
+# Functions common to models 
 export α, w, γ, εₖ, B, θ, ecosystems_times_to_deforest, EcosystemDeforestTime
+
+# Models and model jacobians
 export one_forest_system, antonovsky_jacob
 export two_forest_system, two_forest_jacob
-export n_forest_system, n_forest_system_oop
-export phase_portrait
+export n_forest_system, n_forest_system_oop, n_forest_jacob!
 
-hello_world() = println("Hello world!")
+# Plotting 
+export phase_portrait
 
 include("common.jl") 
 include("n_forest.jl")
