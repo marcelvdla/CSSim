@@ -18,13 +18,19 @@ from src.n_forest import *
 
 
 def get_data_sobol(problem, replicates, distinct_samples):
-    # We get all our samples here
+    # Sample the parameter space
     param_values = saltelli.sample(problem, distinct_samples, calc_second_order=False)
     print(param_values)
 
+    # Create dataframe
     count = 0
     data = pd.DataFrame(index=range(replicates*len(param_values)), 
-                                    columns=['alpha_0', 'P_0', 'w_0', 'distance', 'beta_1', 'beta_2'])
+                                    columns=['alpha_0',
+                                             'P_0',
+                                             'w_0',
+                                             'distance',
+                                             'beta_1',
+                                             'beta_2'])
     data['x1'], data['y1'], data['x2'], data['y2'] = None, None, None, None
 
     # Fixed variable values
@@ -41,6 +47,7 @@ def get_data_sobol(problem, replicates, distinct_samples):
             for name, val in zip(problem['names'], vals):
                 variable_parameters[name] = val
 
+            # Sample parameters
             dist = variable_parameters['distance']
             beta_1 = variable_parameters['beta_1']
             beta_2 = variable_parameters['beta_2']
@@ -54,15 +61,15 @@ def get_data_sobol(problem, replicates, distinct_samples):
             x, y = system_n_forests(np.random.uniform(0,5,2), np.random.uniform(0,5,2), arguments, timesteps=800, dt = 0.01)
             densities = np.array([x[0][-1],y[0][-1],x[1][-1],y[1][-1]])
 
+            # Add data to the dataframe
             data.iloc[count, 0:6] = vals
-            # Sorry for converting a list to a string, but pandas iloc doesn't want to accept a list :(
             data.iloc[count, 6] = densities[0]
             data.iloc[count, 7] = densities[1]
             data.iloc[count, 8] = densities[2]
             data.iloc[count, 9] = densities[3]
             count += 1
 
-            # clear_output()
+            # print progress
             print(f'{count / (len(param_values) * (replicates)) * 100:.2f}% done', end='\r')
     
     return data 
@@ -109,7 +116,7 @@ if __name__ == "__main__":
     problem = {
         'num_vars': 6,
         'names': ['alpha_0', 'P_0', 'w_0', 'distance', 'beta_1', 'beta_2'],
-        'bounds': [[-2.0, -1.0], [0.8, 1.2], [0.75, 1.25], [10, 900], [0.0, 0.5], [0.05, 1.2]]
+        'bounds': [[-2.0, -1.0], [0.8, 1.2], [0.75, 1.25], [10, 900], [0.0, 0.4], [0.0, 0.4]]
     }
 
     data = get_data_sobol(problem, replicates, distinct_samples)
@@ -117,8 +124,6 @@ if __name__ == "__main__":
 
     # pdb.set_trace()
     
-    # y2s = np.array([float(y[2]) for y in list(data['Densities'])])
-
     Si_density = sobol.analyze(problem, data['y2'].values, print_to_console=True, calc_second_order=False)
     
     # First order, shouldnt be needed
