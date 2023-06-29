@@ -99,6 +99,9 @@ Here we briefly describe relevant files to the project.
 ## `notebooks`
 
 `jl_fig*.ipynb`: Reproduces figures the corresponding figures in Cantin2020.
+`two_forest_model.ipynb`: Reproduces figure 8 from Cantin2020; base for scripts n_forest.py
+`perturbed_networks.ipynb`: Reproduces figure 9 from Cantin2020.
+`simulation_perturbed.ipynb`: Simulates multiple runs of the perturbed networks to gather data.
 
 # References
 
