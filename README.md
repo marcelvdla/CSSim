@@ -119,7 +119,6 @@ Here we briefly describe relevant files to the project.
 
 `perturbation.py`: Functions for modeling perturbation of N-forest system.
 
-
 ## `scripts`
 
 `deforested_position_sim.jl`: Sanity check code for deforestation simulation (corresponding in-part to table 4 of Cantin2020)
@@ -130,7 +129,7 @@ Here we briefly describe relevant files to the project.
 
 ## `notebooks`
 
-`jl_fig*.ipynb`: Reproduces figures the corresponding figures in Cantin2020
+`jl_fig*.ipynb`: Reproduces figures the corresponding figures in Cantin2020.
 
 # References
 
