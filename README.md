@@ -107,6 +107,31 @@ here for more information on this.
 To setup `Revise.jl`, follow the instructions described [here](https://timholy.github.io/Revise.jl/stable/) and make sure
 to modify your `~/.julia/config/startup.jl` to include `using Revise`.
 
+# Description of Codebase
+
+Here we briefly describe relevant files to the project.
+
+## `src`
+
+`n_forest.jl & n_forest.py`: N-forest models (systems of ODEs).
+
+`common.jl & common.py`: Helper functions for models.
+
+`perturbation.py`: Functions for modeling perturbation of N-forest system.
+
+
+## `scripts`
+
+`deforested_position_sim.jl`: Sanity check code for deforestation simulation (corresponding in-part to table 4 of Cantin2020)
+
+`plots.jl`: Used to compute `n` system phase portraits.
+
+`sensitivity.py`: Conducts sensitivity analysis of parameters described in Cantin2020.
+
+## `notebooks`
+
+`jl_fig*.ipynb`: Reproduces figures the corresponding figures in Cantin2020
+
 # References
 
 [Cantin2020](https://www.sciencedirect.com/science/article/pii/S1476945X20300386)
