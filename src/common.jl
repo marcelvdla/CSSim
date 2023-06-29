@@ -106,7 +106,7 @@ Return vector of elements `(i, tstar)` to randomly deforest ecosystem `i` at
 time `tstar`.
 
 # Arguments 
-- `T::Int`: Total time system system is evolved (e.g., T = 50 for 50 years)
+- `T::Int`: Timesteps from which tstar will be sampled.
 - `N::Int`: Number of ecosystems to deforest. 
 - `n::Int`: Total number of ecosystems in the complex network.
 - `seed=42`: Random seed for sampling.
@@ -140,7 +140,7 @@ end
 Return vector of `(i, tstar)` with selected ecosystems/times to deforest.
 
 # Arguments 
-- `T::Int`: Total time system system is evolved (e.g., T = 50 for 50 years)
+- `T::Int`: Timesteps from which tstar will be sampled.
 - `deforest_ecosystems::Union{Vector{Int}, Vector{Any}}`: Vector of ecosystem 
     ids to deforest. Pass an empty vector `[]` if you want random ecosystem ids 
     to be used.
@@ -187,6 +187,13 @@ function ecosystems_times_to_deforest(
     ]
 
     return tups
+end 
+
+function iskilled(
+    y_last, 
+    kiled_threshold = 0.0, 
+    atol::AbstractFloat = 1e-3)
+    return isapprox(y_last, kiled_threshold; atol = atol)
 end 
 
 struct EcosystemDeforestTime 

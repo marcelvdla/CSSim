@@ -114,3 +114,5 @@ to modify your `~/.julia/config/startup.jl` to include `using Revise`.
 [Antonovsky1990](https://www.sciencedirect.com/science/article/abs/pii/004058099090043U?via%3Dihub)
 
 [Tutorial: Scipy odeint/solve_vip](https://danielmuellerkomorowska.com/2021/02/16/differential-equations-with-scipy-odeint-or-solve_ivp/)
+
+[Julia Debugger.jl Tutorial](https://www.educative.io/answers/how-to-debug-script-in-julia)
