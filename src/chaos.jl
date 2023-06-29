@@ -29,12 +29,12 @@ function n_forest_tds(u0::AbstractVector, params::Dict{Symbol, Any})
 end
 
 """
-    n_forest_rule!(du, u::AbstractVector, params::Dict{Symbol, Any}, t)
+    n_forest_rule!(du, u::SVector, params::Dict{Symbol, Any}, t)
 
 IIP `n`-forest rule for use with [`n_forest_tds`](@ref) since this requires
 a 1D `u` IIP rule and 1D `u` IIP Jacobian.
 """
-function n_forest_rule!(du, u::AbstractVector, params::Dict{Symbol, Any}, t) 
+function n_forest_rule!(du, u, params::Dict{Symbol, Any}, t) 
     # Distance between `i` and `i+1` forest vector
     d::Union{Vector{Any}, Vector{<:Real}} = [] 
 
@@ -70,7 +70,7 @@ function n_forest_rule!(du, u::AbstractVector, params::Dict{Symbol, Any}, t)
         ẏᵢ = f*xᵢ - h*yᵢ + a₂*αᵢ*yᵢ
 
         # update time derivative vector
-        du[i] =  ẋᵢ
+        du[i] = ẋᵢ
         du[i+n] = ẏᵢ
     end 
 

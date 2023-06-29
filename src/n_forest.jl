@@ -8,6 +8,7 @@ using CSSim
     n_forest_system(u0, params::Dict{Symbol, Any})
 """
 function n_forest_system(u0, params::Dict{Symbol, Any})
+    #@show "Using 1D n-forest system"
     return CoupledODEs(n_forest_rule!, u0, params)
 end
 
@@ -19,6 +20,7 @@ end
 """
 function n_forest_system(
     u0::AbstractMatrix, params::Dict{Symbol, Any}, diffeq::NamedTuple)
+    #@show "Using 2D n-forest system"
     return CoupledODEs(n_forest_rule!, u0, params; diffeq=diffeq)
 end 
 

@@ -25,7 +25,7 @@ export deforested_position_sim
 
 include("common.jl") 
 include("n_forest.jl")
-include("chaos.jl")
+#include("chaos.jl")
 include(joinpath(scriptsdir(), "plots.jl"))
 include(joinpath(scriptsdir(), "deforested_position_sim.jl"))
 
