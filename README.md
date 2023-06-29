@@ -1,7 +1,6 @@
 # CSSim
 
-Reproducing [Networks of forest ecosystems: Mathematical modeling of their biotic pump mechanism and resilience to certain patch deforestation](https://www.sciencedirect.com/science/article/pii/S1476945X20300386) as part of UvA's Complex System Simulation
-2023 course.
+Reproducing [Networks of forest ecosystems: Mathematical modeling of their biotic pump mechanism and resilience to certain patch deforestation](https://www.sciencedirect.com/science/article/pii/S1476945X20300386) as part of UvA's Complex System Simulation 2023 course.
 
 Members:
 
@@ -26,13 +25,6 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
-Functionally, what this means is that in the `scripts/` and `notebooks/`
-folder, you can import modules directly from the `src/` folder. For example,
-
-```python
-# In `notebooks/example_import.ipynb`
-from src.penalty import alpha
-```
 
 # Julia Setup
 
@@ -66,7 +58,7 @@ julia> Pkg.activate(".")
 julia> Pkg.instantiate()
 ```
 
-You may notice that most scripts start with the commands:
+You may notice that Julia scripts start with the commands:
 
 ```julia
 using DrWatson
