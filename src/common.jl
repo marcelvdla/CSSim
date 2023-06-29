@@ -1,3 +1,4 @@
+# Small functions used in the modeling of the n-forest system
 using StatsBase
 using Random
 
@@ -8,12 +9,12 @@ Return water quantity received by ecosystem `i` from all other ecosystems.
 
 [1] : Equation (3), (5), and (6) from Cantin2020
 """
-function w(i, x, y, d, l, P₀, β₁ = 0, β₂ = 1)
+function w(i, x, y, d, l, P₀, β₁, β₂)
     n = length(x)
     if i == 1
         return P₀
     else
-        w_sum = (P₀ + B(x[1], y[1]))*exp(-sum(d[1:n-1]) / l)
+        w_sum = (P₀ + B(x[1], y[1], β₁, β₂))*exp(-sum(d[1:n-1]) / l)
         for i in 2:n-1
             w_sum += B(x[i], y[i], β₁, β₂)*exp(-sum(d[i:n-1]) / l)
         end
@@ -28,7 +29,7 @@ Return quantity of water evaporated of `i^th` forest assuming constant surface.
 
 [1] : Equation (7) from Cantin2020
 """
-B(xᵢ, yᵢ, β₁ = 0, β₂ = 1) = β₁*xᵢ + β₂*yᵢ
+B(xᵢ, yᵢ, β₁, β₂) = β₁*xᵢ + β₂*yᵢ
 
 """
     B(xᵢ, yᵢ, Sᵢ)
@@ -52,7 +53,7 @@ Return penalty value for ecosystems receiving optimal/suboptimal water.
 
 [1] : Equation (8) from Cantin2020
 """
-α(wᵢ, α₀ = -1, w₀ = 1) = α₀*(1 - wᵢ / w₀)
+α(wᵢ, α₀, w₀) = α₀*(1 - wᵢ / w₀)
 
 """
     γ(y, a = 1, b = 1, c = 1)
@@ -66,7 +67,7 @@ Return mortality rate of young trees.
 γ(y, a = 1, b = 1, c = 1) = a*(y - b)^2 + c
 
 """ 
-    θ(t, tstar)
+    θ(t, tstar, A = 2)
 
 Return deforestation coefficient.
 
@@ -74,12 +75,11 @@ Return deforestation coefficient.
 
 [1] : Equation (16) from Cantin2020
 """
-function θ(t, tstar)
-    A = 2
+function θ(t, tstar, A = 2)
     if t <= tstar
         return 0
     elseif tstar < t < tstar + 1
-        return (A/2) - (A/2)cos(π*(t-tstar))
+        return (A/2) - (A/2)*cos(π*(t - tstar))
     else
         return A 
     end
