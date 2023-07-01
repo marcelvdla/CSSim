@@ -1,7 +1,6 @@
 # CSSim
 
-Reproducing [Networks of forest ecosystems: Mathematical modeling of their biotic pump mechanism and resilience to certain patch deforestation](https://www.sciencedirect.com/science/article/pii/S1476945X20300386) as part of UvA's Complex System Simulation
-2023 course.
+Reproducing [Networks of forest ecosystems: Mathematical modeling of their biotic pump mechanism and resilience to certain patch deforestation](https://www.sciencedirect.com/science/article/pii/S1476945X20300386) as part of UvA's Complex System Simulation 2023 course.
 
 Members:
 
@@ -26,13 +25,6 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
-Functionally, what this means is that in the `scripts/` and `notebooks/`
-folder, you can import modules directly from the `src/` folder. For example,
-
-```python
-# In `notebooks/example_import.ipynb`
-from src.penalty import alpha
-```
 
 # Julia Setup
 
@@ -54,29 +46,6 @@ export to the `PATH` variable with `/home/<INSERT YOUR USERNAME>`. Finally,
 `source ~/.bashrc` and then check to see that the Julia REPL work
 by typing `julia`.
 
-*On Windows (unstable):*
-
-```
-TODO
-```
-
-*On MacOS (semi-stable):*
-
-On macOS, a julia-1.9.1-mac64.dmg file is provided, which contains Julia-1.9.app. Installation is the same as any other Mac software: drag the Julia-1.9.app to Applications Folder's Shortcut. The Julia download runs on macOS 10.9 Mavericks and later releases. You can build from source for macOS 10.6 Snow Leopard (possibly earlier versions as well) and 32-bit but neither are fully supported.
-
-You can launch Julia by opening the Julia app like any other application.
-Optional: Add Julia to PATH
-
-If you want to launch Julia from the command line, first open a new terminal window, then run the following snippet from your shell (e.g., using the Terminal app, not inside the Julia prompt).
-
-```
-sudo mkdir -p /usr/local/bin
-sudo rm -f /usr/local/bin/julia
-sudo ln -s /Applications/Julia-1.9.app/Contents/Resources/julia/bin/julia /usr/local/bin/julia
-```
-
-This code creates a symlink to a Julia version (here 1.9) of your choosing. To launch Julia, simply type julia inside your shell and press return.
-
 ## Usage
 
 If Julia is already installed, change to the directory of this project
@@ -89,7 +58,7 @@ julia> Pkg.activate(".")
 julia> Pkg.instantiate()
 ```
 
-You may notice that most scripts start with the commands:
+You may notice that Julia scripts start with the commands:
 
 ```julia
 using DrWatson
@@ -107,6 +76,36 @@ here for more information on this.
 To setup `Revise.jl`, follow the instructions described [here](https://timholy.github.io/Revise.jl/stable/) and make sure
 to modify your `~/.julia/config/startup.jl` to include `using Revise`.
 
+# Description of Codebase
+
+Here we briefly describe relevant files to the project.
+
+## `src`
+
+`n_forest.jl & n_forest.py`: N-forest models (systems of ODEs).
+
+`common.jl & common.py`: Helper functions for models.
+
+`perturbation.py`: Functions for modeling perturbation of N-forest system.
+
+## `scripts`
+
+`deforested_position_sim.jl`: Sanity check code for deforestation simulation (corresponding in-part to table 4 of Cantin2020)
+
+`plots.jl`: Used to compute `n` system phase portraits.
+
+`sensitivity.py`: Conducts sensitivity analysis of parameters described in Cantin2020.
+
+## `notebooks`
+
+`jl_fig*.ipynb`: Reproduces figures the corresponding figures in Cantin2020.
+
+`two_forest_model.ipynb`: Reproduces figure 8 from Cantin2020; base for scripts n_forest.py
+
+`perturbed_networks.ipynb`: Reproduces figure 9 from Cantin2020.
+
+`simulation_perturbed.ipynb`: Simulates multiple runs of the perturbed networks to gather data.
+
 # References
 
 [Cantin2020](https://www.sciencedirect.com/science/article/pii/S1476945X20300386)
@@ -114,3 +113,5 @@ to modify your `~/.julia/config/startup.jl` to include `using Revise`.
 [Antonovsky1990](https://www.sciencedirect.com/science/article/abs/pii/004058099090043U?via%3Dihub)
 
 [Tutorial: Scipy odeint/solve_vip](https://danielmuellerkomorowska.com/2021/02/16/differential-equations-with-scipy-odeint-or-solve_ivp/)
+
+[Julia Debugger.jl Tutorial](https://www.educative.io/answers/how-to-debug-script-in-julia)

@@ -4,6 +4,9 @@
 # Use this file on every device where git development is done.
 
 
+# don't count notebooks file for linguistics
+notebooks/** linguist-vendored 
+
 ###
 ### Auto detect text files and perform LF normalization
 ###
