@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
-This script computes total order Sobol indices for the N-forest network with biotic pump
+This script computes total order Sobol indices for the N-forest network with 
+biotic pump. This script adapts code that was provided during the ABM course
+for sensitivity analysis to work with the biotic pump model. 
 """
 
 # Imports
@@ -19,7 +21,9 @@ from src.n_forest import *
 
 def get_data_sobol(problem, replicates, distinct_samples):
     # Sample the parameter space
-    param_values = saltelli.sample(problem, distinct_samples, calc_second_order=False)
+    param_values = saltelli.sample(problem, 
+                                   distinct_samples,
+                                   calc_second_order=False)
     print(param_values)
 
     # Create dataframe
@@ -58,7 +62,10 @@ def get_data_sobol(problem, replicates, distinct_samples):
             arguments = (rho,f,a_1,h,a_2,dist,beta_2,P_0,w_0,alpha_0,beta_1)
             
             # Run model
-            x, y = system_n_forests(np.random.uniform(0,5,2), np.random.uniform(0,5,2), arguments, timesteps=800, dt = 0.01)
+            x, y = system_n_forests(np.random.uniform(0,5,2),
+                                    np.random.uniform(0,5,2),
+                                    arguments, timesteps=800, 
+                                    dt = 0.01)
             densities = np.array([x[0][-1],y[0][-1],x[1][-1],y[1][-1]])
 
             # Add data to the dataframe
@@ -70,15 +77,16 @@ def get_data_sobol(problem, replicates, distinct_samples):
             count += 1
 
             # print progress
-            print(f'{count / (len(param_values) * (replicates)) * 100:.2f}% done', end='\r')
+            print(f'{count/(len(param_values)*(replicates))*100:.2f}% done',
+                  end='\r')
     
     return data 
 
 
 def plot_index(s, params, i, title=''):
     """
-    Creates a plot for Sobol sensitivity analysis that shows the contributions
-    of each parameter to the global sensitivity.
+    Creates a plot for Sobol sensitivity analysis that shows the 
+    contributions of each parameter to the global sensitivity.
 
     Args:
         s (dict): dictionary {'S#': dict, 'S#_conf': dict} of dicts that hold

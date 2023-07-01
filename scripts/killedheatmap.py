@@ -1,4 +1,12 @@
 #!/usr/bin/env python3
+"""
+Note: this file can only be run when the seed in the function 
+get_ecosystems_to_perturb_at_times_tstar is commented out,
+otherwise it will only do the same combination, when calling
+this file also provide the distance (e.g. python3 killedheatmap.py 50)
+"""
+
+# Imports
 from src.n_forest import *
 from itertools import combinations
 import sys
@@ -10,7 +18,6 @@ if __name__=="__main__":
     a_2 = 0       # biotic_pump_old
     h = 2         # mortality_old
     dist = int(sys.argv[1])
-    print(dist)
 
     beta_2 = 0.15
     P_0 = 1.05
@@ -19,14 +26,14 @@ if __name__=="__main__":
     beta_1 = 0
     
     args = (rho,f,a_1,h,a_2,dist,beta_2,P_0,w_0,alpha_0,beta_1)
-
     killgrid = np.zeros((10,10))
-
-    args = (rho,f,a_1,h,a_2,50,0.15,P_0,w_0,alpha_0,beta_1)
-
     combs = list(combinations(range(10),2))
 
+    # Find number of killed trees for all combinations
+    # This is like rolling a dice, since the implementation
+    # didn't support choosing which ecosystems to deforest
     while len(combs) > 0:
+        # Random initial densities
         x0s, y0s = np.random.uniform(0,4,10), np.random.uniform(0,4,10) 
         x, y, ids = system_n_forests(x0s, y0s, args, perturbed = True)
 
@@ -34,8 +41,8 @@ if __name__=="__main__":
             combs.remove(tuple(ids))
             print('removed', ids, 'remaining: ', len(combs))
 
+        # Add number of killed forests to the grid
         num_kills = sum([1 for forest in y if np.isclose(forest[-1], 0.0)])
-
         killgrid[ids[0], ids[1]] = num_kills
 
     print(killgrid)
@@ -50,6 +57,3 @@ if __name__=="__main__":
     ax.set_yticklabels(range(1,11))
     fig.colorbar(im)
     plt.show()
-
-# started at 11:18 - finished 11:35ish
-# started at 11:39 - finished 11:59ish
